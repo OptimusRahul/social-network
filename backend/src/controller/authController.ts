@@ -2,9 +2,11 @@ import { Request, Response } from 'express';
 import User, { IUser } from '../models/userModel';
 import { auth } from '../errors/index';
 import { signToken } from '../helpers/generateToken';
-import { responseHandler, successResponseHandler, errorResponseHandler } from '../utils/index';
+import { successResponseHandler, errorResponseHandler } from '../utils/index';
+
 const { ENTER_ALL_FIELDS_WARNING } = auth;
 
+// Create and Send Token
 const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: any, res: any) => {
     const { id } = user;
     const token = signToken(id);
@@ -20,13 +22,12 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
         credentials: 'include'
     });
 
-    // user.password = '';
-
     const responseObj = { token, id }
 
     successResponseHandler(res, responseObj);
 }
 
+// Signup
 export const signUp = async(req: Request, res: Response) => {
     const { body, 
             body: { email, password, passwordConfirm, 
@@ -56,6 +57,7 @@ export const signUp = async(req: Request, res: Response) => {
     }
 }
 
+// Login
 export const login = async(req: Request, res: Response) => {
     const { body: { email, password } } = req;
     
@@ -82,8 +84,33 @@ export const login = async(req: Request, res: Response) => {
     }
 }
 
-export const dashBoard = async(req: Request, res: Response) => {
-    console.log('Hello');
+// Logout
+export const logout = async(req: Request, res: Response) => {
+    res.cookie('jwt', 'loggedOut', {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true
+    });
 
+    const responseObj = { token: null, msg: 'User Logged Out Successfully' };
+    successResponseHandler(res, responseObj);
+}
+
+// Forgot Password
+export const fogotPassword = async() => {
+
+}
+
+// Reset Password
+export const resetPassword = async() => {
+
+}
+
+// Update Password
+export const updatePassword = async() => {
+
+}
+
+//Test if token authentication is working or not
+export const dashBoard = async(req: Request, res: Response) => {
     res.status(200).json({ msg: 'Hello from Dashboard!!' })
 }

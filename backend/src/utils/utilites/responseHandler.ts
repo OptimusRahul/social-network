@@ -11,4 +11,3 @@ export const successResponseHandler = (res: Response, data: any, statusCode: num
 export const errorResponseHandler = (res: Response, data: any, statusCode: number = 400 ) => {
     res.status(statusCode).json({ status: 'error', data });
 }
-

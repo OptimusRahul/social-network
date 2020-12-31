@@ -1,0 +1,143 @@
+import { Schema, model, Document } from 'mongoose';
+import { ObjectID } from 'mongodb';
+import validator from 'validator';
+import bcrypt from 'bcryptjs';
+import { user } from '../errors/index';
+
+const { 
+    FIRST_NAME_WARNING,
+    EMAIL_WARNING,
+    PASSWORD_WARNING,
+    GENDER_WARNING
+} = user;
+
+const userSchema: Schema<IUser> = new Schema({
+    email: {
+        type: String,
+        required: [true, EMAIL_WARNING],
+        unique: true,
+        lowercase: true,
+        validate: [validator.isEmail, EMAIL_WARNING]
+    },
+    password: {
+        type: String,
+        required: [true, PASSWORD_WARNING],
+        minlength: 8,
+        select: false,
+    },
+    personalDetails: {
+        firstName:  {
+            type: String,
+            required: [true, FIRST_NAME_WARNING]
+        },
+        lastName: {
+            type: String
+        },
+        photo: {
+            type: String
+        },
+        gender: {
+            type: Number,
+            enum: [0, 1],
+            default: 0,
+            required: [true, GENDER_WARNING]
+        },
+        DOB: {
+           type: Date,
+        },
+        location: {
+            work: {
+                type: String,
+            },
+            home: {
+                type: String
+            }
+        }
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    friends: [{ type: ObjectID, ref: 'user', createdAt: Date }],
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+        type: Boolean,
+        default: false,
+        select: false
+    }
+
+});
+
+enum Gender {
+    Male = 1,
+    Female = 0
+}
+
+export interface IUser {
+    id: string,
+    email: string,
+    password: string,
+    personalDetails: {
+        firstName: string,
+        lastName: string,
+        photo: string,
+        gender: Gender,
+
+    },
+    createdAt: Date,
+    passwordChangedAt: Date,
+    friends: Array<object>,
+}
+
+interface IUserBaseDocument extends Omit<IUser, 'id'>, Document {
+    fullName: string;
+    getGender(): string;
+    comparePassword(this: IUserBaseDocument, newPassword: string): Promise<boolean>,
+    checkExistingField(field: string, email: string): Promise<boolean>,
+    changedPasswordAfter(this: IUserBaseDocument, JWTTimestamp: number): boolean
+}
+
+// DB Middlewares
+userSchema.pre<IUserBaseDocument>('save', async function(next) {
+    //Only run this function if password was actually modified
+    if(!this.isModified('password')) return next();
+
+    this.password = await bcrypt.hash(this.password, 12);
+
+    next();
+});
+
+// Virtuals
+userSchema.virtual('fullName').get(function(this: IUser) {
+    return this.personalDetails.firstName + this.personalDetails.lastName;
+});
+
+// Methods
+userSchema.methods.getGender = function(this: IUser) {
+    return this.personalDetails.gender > 0 ? 'Male' : 'Female'
+}
+
+userSchema.methods.comparePassword = async function(this: IUser, newPassword: string) {
+    console.log(this.password, newPassword);
+    return await bcrypt.compare(newPassword, this.password)
+}
+
+userSchema.methods.changedPasswordAfter = function(this: IUser, JWTTimestamp: number) {
+    if(this.passwordChangedAt) {
+        const changeTimestamp = this.passwordChangedAt.getTime()/1000;
+        return JWTTimestamp < changeTimestamp;
+    }
+    return false;
+}
+
+// Statics
+userSchema.statics.checkExistingField = async function(field: string, value: string) {
+    const checkField = await User.findOne({ [`${field}`]: value })
+    return checkField;
+}
+
+const User = model<IUserBaseDocument>('user', userSchema);
+
+export default User;

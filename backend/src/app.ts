@@ -1,22 +1,11 @@
-import * as express from 'express';
+import express from 'express';
+import { userRouter } from './routes/userRoutes';
 
-class App {
-    public express: express.Application;
+const app = express();
 
-    constructor(){
-        this.express = express.default();
-        this.mountRoutes();
-    }
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-    private mountRoutes(): void {
-        const router = express.Router();
-        router.get('/', (request: express.Request, response: express.Response) => {
-            response.json({
-                message: 'Hello World!'
-            });
-        });
-        this.express.use('/', router);
-    }
-}
+app.use('/api/v1/users', userRouter);
 
-export default new App().express;
+export default app;

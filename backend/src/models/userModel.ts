@@ -2,6 +2,8 @@ import { Schema, model, Document } from 'mongoose';
 import { ObjectID } from 'mongodb';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import { randomBytes, createHash  } from 'crypto';
+
 import { user } from '../errors/index';
 
 const { 
@@ -61,7 +63,7 @@ const userSchema: Schema<IUser> = new Schema({
     friends: [{ type: ObjectID, ref: 'user', createdAt: Date }],
     passwordChangedAt: Date,
     passwordResetToken: String,
-    passwordResetExpires: Date,
+    passwordResetExpires: Number,
     active: {
         type: Boolean,
         default: false,
@@ -88,6 +90,8 @@ export interface IUser {
     },
     createdAt: Date,
     passwordChangedAt: Date,
+    passwordResetToken: string,
+    passwordResetExpires: number
     friends: Array<object>,
 }
 
@@ -96,7 +100,8 @@ interface IUserBaseDocument extends Omit<IUser, 'id'>, Document {
     getGender(): string;
     comparePassword(this: IUserBaseDocument, newPassword: string): Promise<boolean>,
     checkExistingField(field: string, email: string): Promise<boolean>,
-    changedPasswordAfter(this: IUserBaseDocument, JWTTimestamp: number): boolean
+    changedPasswordAfter(this: IUserBaseDocument, JWTTimestamp: number): boolean,
+    createPasswordResetToken(this: IUserBaseDocument): string
 }
 
 // DB Middlewares
@@ -120,7 +125,6 @@ userSchema.methods.getGender = function(this: IUser) {
 }
 
 userSchema.methods.comparePassword = async function(this: IUser, newPassword: string) {
-    console.log(this.password, newPassword);
     return await bcrypt.compare(newPassword, this.password)
 }
 
@@ -130,6 +134,13 @@ userSchema.methods.changedPasswordAfter = function(this: IUser, JWTTimestamp: nu
         return JWTTimestamp < changeTimestamp;
     }
     return false;
+}
+
+userSchema.methods.createPasswordResetToken = function(this: IUser) {
+    const resetToken = randomBytes(32).toString('hex');
+    this.passwordResetToken = createHash('sha256').update(resetToken).digest('hex');
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    return resetToken;
 }
 
 // Statics

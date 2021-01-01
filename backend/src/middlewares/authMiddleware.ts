@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { errorResponseHandler } from '../utils';
-import { authMiddleWare } from '../errors/middlewares/auth.middleware.errors';
+import { authMiddleWare } from '../errors/index';
 import User from '../models/userModel';
 
 const { 
@@ -12,7 +12,6 @@ const {
     USER_LOGGED_IN } = authMiddleWare;
 
 export const protect = async(req: Request, res: Response, next: NextFunction) => {
-    // const { JWT_SECRET } = jwtConfig;
     // 1) Getting token and check if it's there
     let token: string = '';
 
@@ -75,8 +74,8 @@ export const isLoggedIn = async(req: Request, res: Response, next: NextFunction)
                 return errorResponseHandler(res, USER_LOGGED_IN)
             }
 
-            // if(currentUser?.changedPasswordAfter(decoded.iat)){
-            //     // return next();
+            // if(currentUser && currentUser.changedPasswordAfter(decoded.iat)){
+                // return next();
             // }
 
             res.locals.user = currentUser;

@@ -13,6 +13,7 @@ const db_uri = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_P
 mongoose.Promise = global.Promise;
 
 mongoose.connect(db_uri, {
+    useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => {

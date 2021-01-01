@@ -1,6 +1,26 @@
-import { Router } from 'express';
-import { signUp } from '../controller/authController';
+import { Schema, model, Document } from 'mongoose';
 
-const router = Router();
+const friendsRequestSchema = new Schema({
+    from: {
+        type: String,
+        required: true,
+    },
+    to: {
+        type: String,
+        required: true
+    },
+    createdNow: {
+        type: Date,
+        default: Date.now
+    }
+});
 
-router.post('/signup', )
+export interface IFriendsRequest extends Document {
+    from: string,
+    to: string,
+    createdAt: Date
+}
+
+const FriendRequest = model<IFriendsRequest>('friendRequest', friendsRequestSchema);
+
+export default FriendRequest;

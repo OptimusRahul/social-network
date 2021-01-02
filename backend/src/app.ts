@@ -3,7 +3,10 @@ import cookieParser from 'cookie-parser';
 
 import { userRouter } from './routes/userRoutes';
 import { friendRequestRouter } from './routes/friendRequestRoutes';
-import { AppError } from './utils/utilites/appError';
+import { errorResponseHandler } from './utils/index';
+import { appRouter } from './errors'
+
+const { INVALID_ROUTE } = appRouter;
 
 const app = express();
 
@@ -16,7 +19,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/friendRequest', friendRequestRouter);
 
 app.all('*', (req, res, next) => {
-    next(new AppError(`Can't find the request URL on this server`, 404));
+    return next(errorResponseHandler(res, INVALID_ROUTE, 404));
 });
 
 export default app;

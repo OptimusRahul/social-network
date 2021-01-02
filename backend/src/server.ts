@@ -1,17 +1,18 @@
 import mongoose from 'mongoose';
-import * as dotenv from 'dotenv';
+
 import app from './app';
+import { dbConfig } from './config/index';
 
-dotenv.config();
+// DB CREDENTIALS
+const { DATABASE, DATABASE_PASSWORD } = dbConfig;
 
-if(!process.env.DATABASE || !process.env.DATABASE_PASSWORD) {
-    process.exit(1);
-}
+// DB_URI
+const db_uri = DATABASE.replace('<PASSWORD>', DATABASE_PASSWORD);
 
-const db_uri = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
-
+// Mongoose Setup
 mongoose.Promise = global.Promise;
 
+// Mongoose Connection
 mongoose.connect(db_uri, {
     useCreateIndex: true,
     useNewUrlParser: true,
@@ -24,7 +25,7 @@ mongoose.connect(db_uri, {
 
 const port = process.env.port || 5000;
 
-mongoose.set('debug', true);
+// mongoose.set('debug', true);
 
 app.listen(port, () => {
     console.log(`App is listening on ${port}`);

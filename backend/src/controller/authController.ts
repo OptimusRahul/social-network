@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import validator from 'validator';
 import { createHash } from 'crypto';
 
+import { jwtConfig } from '../config/index';
 import User, { IUser } from '../models/userModel';
 import { authController } from '../errors/index';
 import { signToken } from '../helpers/generateToken';
@@ -15,17 +16,15 @@ const {
     PASSWORD_MISMATCH,
     TOKEN_EXPIRED } = authController;
 
+const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
+
 // Create and Send Token
 const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: any, res: any) => {
     const { id } = user;
     const token = signToken(id);
 
-    if (!process.env.JWT_COOKIE_EXPIRES_IN) {
-        process.exit(1);
-    }
-
     res.cookie('jwt', token, {
-        expires: new Date(Date.now().valueOf() + <any>process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now().valueOf() + <any>JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: req.secure,
         credentials: 'include'

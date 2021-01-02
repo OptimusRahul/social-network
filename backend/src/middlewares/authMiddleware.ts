@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+import { jwtConfig } from '../config/index';
 import { errorResponseHandler } from '../utils';
 import { authMiddleWare } from '../errors/index';
 import User from '../models/userModel';
@@ -10,6 +11,8 @@ const {
     UNAUTHORIZED_TOKEN, 
     PASSWORD_CHANGED_LOGIN_AGAIN,
     USER_LOGGED_IN } = authMiddleWare;
+
+const { JWT_SECRET } = jwtConfig;
 
 export const protect = async(req: Request, res: Response, next: NextFunction) => {
     // 1) Getting token and check if it's there
@@ -28,13 +31,9 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
     // 2) Verification token
     let currentUser;
 
-    if(!process.env.JWT_SECRET){
-        process.exit(1);
-    }
-
     try{ 
 
-        const decoded = <{ id:string, iat:number, exp:number }>jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = <{ id:string, iat:number, exp:number }>jwt.verify(token, JWT_SECRET);
 
         console.log(decoded);
 
@@ -63,10 +62,7 @@ export const isLoggedIn = async(req: Request, res: Response, next: NextFunction)
     console.log(req.cookies.jwt)
     if(req.cookies.jwt) {
         try {
-            if(!process.env.JWT_SECRET) {
-                process.exit(1);
-            }
-            const decoded = <{id: string, iat: number, exp: number}>jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+            const decoded = <{id: string, iat: number, exp: number}>jwt.verify(req.cookies.jwt, JWT_SECRET);
 
             const currentUser = await User.findById(decoded.id);
             

@@ -1,13 +1,10 @@
 import jwt from 'jsonwebtoken';
-import { config } from 'dotenv';
+import { jwtConfig } from '../config/jwt/jwt';
 
-config();
+const { JWT_SECRET, JWT_EXPIRES_IN } = jwtConfig;
 
-export const signToken = (id: string) => {
-    if(!process.env.JWT_SECRET || !process.env.JWT_EXPIRES_IN){
-        process.exit(1);
-    }
-    return jwt.sign({ id },process.env.JWT_SECRET, { 
-        expiresIn: process.env.JWT_EXPIRES_IN
+export const signToken = (id: string) => { 
+    return jwt.sign({ id }, JWT_SECRET, { 
+        expiresIn: JWT_EXPIRES_IN
     });
 }

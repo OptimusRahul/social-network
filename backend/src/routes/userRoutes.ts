@@ -9,7 +9,7 @@ userRouter.post('/signup', signUp);
 userRouter.post('/login', login);
 userRouter.get('/logout', logout);
 userRouter.post('/forgotPassword', fogotPassword);
-userRouter.patch('/resetPassword/:token', resetPassword)
+userRouter.patch('/resetPassword/:token', resetPassword);
 
 userRouter.use(protect);
 userRouter.patch('/updateMyPassword', updatePassword);

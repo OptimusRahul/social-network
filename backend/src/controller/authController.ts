@@ -46,6 +46,10 @@ export const signUp = async (req: Request, res: Response) => {
         errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
     }
 
+    if(password !== passwordConfirm) {
+        //
+    }
+
     if (errors.length > 0) {
         errorResponseHandler(res, errors);
     } else {
@@ -156,14 +160,19 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
 
     const { user: { id } } = <any>req;
-    const user = await User.findById(id).select('+password');
-
-    if(!user?.comparePassword(password)) {
+    const user = await User?.findById(id).select('+password');
+    
+    console.log(await user?.comparePassword(currentPassword));
+    if(!await user?.comparePassword(currentPassword)) {
         return errorResponseHandler(res, INCORRECT_PASSWORD);
     }
 
+    if(!user) {
+        return errorResponseHandler(res, INVALID_USER);
+    }
+
     user.password = password;
-    await user.save();
+    await user?.save();
 
     successResponseHandler(res, 'Password Updated Successfully');
 }

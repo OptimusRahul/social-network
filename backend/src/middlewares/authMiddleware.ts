@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { jwtConfig } from '../config/index';
+import { jwtConfig } from '../config';
+import { decodeJWT } from '../helpers'
 import { errorResponseHandler } from '../utils';
-import { authMiddleWare } from '../errors/index';
+import { authMiddleWare } from '../errors';
 import User from '../models/userModel';
 
 const { 
@@ -33,7 +34,7 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
 
     try{ 
 
-        const decoded = <{ id:string, iat:number, exp:number }>jwt.verify(token, JWT_SECRET);
+        const decoded = decodeJWT(token);
 
         console.log(decoded);
 
@@ -59,10 +60,10 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
 }
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {
-    console.log(req.cookies.jwt)
     if(req.cookies.jwt) {
+        const token = req.cookies.jwt;
         try {
-            const decoded = <{id: string, iat: number, exp: number}>jwt.verify(req.cookies.jwt, JWT_SECRET);
+            const decoded = decodeJWT(token);
 
             const currentUser = await User.findById(decoded.id);
             

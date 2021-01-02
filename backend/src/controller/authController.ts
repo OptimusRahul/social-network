@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import validator from 'validator';
 import { createHash } from 'crypto';
 
-import { jwtConfig } from '../config/index';
+import { jwtConfig } from '../config';
 import User, { IUser } from '../models/userModel';
 import { authController } from '../errors/index';
-import { signToken } from '../helpers/generateToken';
-import { successResponseHandler, errorResponseHandler } from '../utils/index';
+import { signToken } from '../helpers';
+import { successResponseHandler, errorResponseHandler } from '../utils';
 
 const {
     ENTER_ALL_FIELDS_WARNING,

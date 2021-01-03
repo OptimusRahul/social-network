@@ -1,12 +1,15 @@
 import express from 'express';
 
-import { isLoggedIn } from '../middlewares/authMiddleware';
+import { isLoggedIn } from '../middlewares/auth.middleware';
+import { getFriendRequest, sendFriendRequest, deleteFriendRequest, acceptFriendRequest } from '../controller/friendRequestController';
 
 const friendRequestRouter = express.Router();
 
 friendRequestRouter.use(isLoggedIn);
 
-friendRequestRouter.post('/sendFriendRequest', (req, res) => { res.send('sendFriendRequest Route') });
-friendRequestRouter.get('/getFriendRequest', (req, res) => { res.send('getFriendRequest Route') });
+friendRequestRouter.get('/get', getFriendRequest);
+friendRequestRouter.post('/send', sendFriendRequest);
+friendRequestRouter.delete('/delete', deleteFriendRequest);
+friendRequestRouter.post('/accept', acceptFriendRequest);
 
 export { friendRequestRouter };

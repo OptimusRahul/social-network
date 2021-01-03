@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 
 import { jwtConfig } from '../config';
 import User, { IUser } from '../models/userModel';
-import { authController } from '../errors/index';
+import { authController } from '../response/errors/index';
 import { signToken } from '../helpers';
 import { successResponseHandler, errorResponseHandler } from '../utils';
 
@@ -46,7 +46,7 @@ export const signUp = async (req: Request, res: Response) => {
     }
 
     if(password !== passwordConfirm) {
-        //
+        errors.push({ msg: PASSWORD_MISMATCH })
     }
 
     if (errors.length > 0) {
@@ -96,7 +96,7 @@ export const login = async (req: Request, res: Response) => {
 
 // Logout
 export const logout = async (req: Request, res: Response) => {
-    res.cookie('jwt', 'loggedOut', {
+    res.cookie('jwt', '', {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true
     });
@@ -171,6 +171,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
 
     user.password = password;
+    user.passwordChangedAt = new Date(Date.now());
     await user?.save();
 
     successResponseHandler(res, 'Password Updated Successfully');

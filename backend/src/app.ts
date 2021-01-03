@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import { userRouter } from './routes/userRoutes';
 import { friendRequestRouter } from './routes/friendRequestRoutes';
 import { errorResponseHandler } from './utils/index';
-import { appRouter } from './errors'
+import { appRouter } from './response/errors'
 
 const { INVALID_ROUTE } = appRouter;
 
@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser())
 
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/friendRequest', friendRequestRouter);
+app.use('/api/v1/friendRequests', friendRequestRouter);
 
 app.all('*', (req, res, next) => {
     return next(errorResponseHandler(res, INVALID_ROUTE, 404));

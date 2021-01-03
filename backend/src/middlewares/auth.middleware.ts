@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 
 import { jwtConfig } from '../config';
-import { decodeJWT } from '../helpers'
-import { errorResponseHandler } from '../utils';
-import { authMiddleWare } from '../errors';
+import { decodeJWT, extractJWT } from '../helpers'
+import { errorResponseHandler, successResponseHandler } from '../utils';
+import { authMiddleWare } from '../response/errors';
 import User from '../models/userModel';
 
 const { 
@@ -17,17 +16,7 @@ const { JWT_SECRET } = jwtConfig;
 
 export const protect = async(req: Request, res: Response, next: NextFunction) => {
     // 1) Getting token and check if it's there
-    let token: string = '';
-
-    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    } else if(req.cookies.jwt) {
-        token = req.cookies.jwt;
-    } 
-
-    if(!token || token === 'null') {
-        return errorResponseHandler(res, UNAUTHORIZED_USER, 401);
-    }
+    const token = extractJWT(req);
 
     // 2) Verification token
     let currentUser;
@@ -35,8 +24,6 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
     try{ 
 
         const decoded = decodeJWT(token);
-
-        console.log(decoded);
 
         // 3) Check if user still exists
         currentUser = await User.findById(decoded.id);
@@ -60,28 +47,30 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
 }
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {
+    console.log(req.cookies.jwt);
     if(req.cookies.jwt) {
         const token = req.cookies.jwt;
+        console.log(token);
         try {
             const decoded = decodeJWT(token);
 
             const currentUser = await User.findById(decoded.id);
             
-            if(currentUser) {
+            if(!currentUser) {
                 return errorResponseHandler(res, USER_LOGGED_IN)
             }
 
-            // if(currentUser && currentUser.changedPasswordAfter(decoded.iat)){
-                // return next();
-            // }
+            if(currentUser.changedPasswordAfter(decoded.iat)) {
+                return successResponseHandler(res, 'You have changed your password please login again');
+            }
 
             res.locals.user = currentUser;
-            // return next();
+            return next();
 
         } catch(error) {
             const { message } = JSON.parse(JSON.stringify(error));
             return errorResponseHandler(res, message);
         }
     }
-    next();
+    next(errorResponseHandler(res, UNAUTHORIZED_USER));
 }

@@ -4,7 +4,7 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import { randomBytes, createHash  } from 'crypto';
 
-import { user } from '../errors/index';
+import { user } from '../response/errors/index';
 
 const { 
     FIRST_NAME_WARNING,
@@ -86,6 +86,8 @@ export interface IUser {
         lastName: string,
         photo: string,
         gender: Gender,
+        DOB: Date,
+        location: Object
 
     },
     createdAt: Date,
@@ -97,7 +99,7 @@ export interface IUser {
 
 interface IUserBaseDocument extends Omit<IUser, 'id'>, Document {
     fullName: string;
-    getGender(): string;
+    getGender: string;
     comparePassword(this: IUserBaseDocument, newPassword: string): Promise<boolean>,
     checkExistingField(field: string, email: string): Promise<boolean>,
     changedPasswordAfter(this: IUserBaseDocument, JWTTimestamp: number): boolean,
@@ -119,11 +121,11 @@ userSchema.virtual('fullName').get(function(this: IUser) {
     return this.personalDetails.firstName + this.personalDetails.lastName;
 });
 
-// Methods
-userSchema.methods.getGender = function(this: IUser) {
-    return this.personalDetails.gender > 0 ? 'Male' : 'Female'
-}
+userSchema.virtual('getGender').get(function(this: IUser) {
+    return this.personalDetails.gender ? 'Female' : 'Male' 
+});
 
+// Methods
 userSchema.methods.comparePassword = async function(this: IUser, newPassword: string) {
     return await bcrypt.compare(newPassword, this.password)
 }

@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 
 import { userRouter } from './routes/userRoutes';
 import { friendRequestRouter } from './routes/friendRequestRoutes';
+import { notificationRouter } from './routes/notificationRoutes';
 import { errorResponseHandler } from './utils/index';
 import { appRouter } from './response/errors'
 
@@ -17,6 +18,7 @@ app.use(cookieParser())
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/friendRequests', friendRequestRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 app.all('*', (req, res, next) => {
     return next(errorResponseHandler(res, INVALID_ROUTE, 404));

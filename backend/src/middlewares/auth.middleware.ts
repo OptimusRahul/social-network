@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { jwtConfig } from '../config';
 import { decodeJWT, extractJWT } from '../helpers'
 import { errorResponseHandler, successResponseHandler } from '../utils';
+import { authSuccess } from '../response/success/middlewares/auth.middleware';
 import { authMiddleWare } from '../response/errors';
 import User from '../models/userModel';
 
@@ -11,8 +11,7 @@ const {
     UNAUTHORIZED_TOKEN, 
     PASSWORD_CHANGED_LOGIN_AGAIN,
     USER_LOGGED_IN } = authMiddleWare;
-
-const { JWT_SECRET } = jwtConfig;
+const { PASSWORD_CHANGED } = authSuccess;
 
 export const protect = async(req: Request, res: Response, next: NextFunction) => {
     // 1) Getting token and check if it's there
@@ -28,7 +27,6 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
         // 3) Check if user still exists
         currentUser = await User.findById(decoded.id);
         if(!currentUser) {
-            console.log(UNAUTHORIZED_TOKEN);
             return errorResponseHandler(res, UNAUTHORIZED_TOKEN);
         }
 
@@ -47,10 +45,8 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
 }
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {
-    console.log(req.cookies.jwt);
     if(req.cookies.jwt) {
         const token = req.cookies.jwt;
-        console.log(token);
         try {
             const decoded = decodeJWT(token);
 
@@ -61,7 +57,7 @@ export const isLoggedIn = async(req: Request, res: Response, next: NextFunction)
             }
 
             if(currentUser.changedPasswordAfter(decoded.iat)) {
-                return successResponseHandler(res, 'You have changed your password please login again');
+                return successResponseHandler(res, PASSWORD_CHANGED_LOGIN_AGAIN);
             }
 
             res.locals.user = currentUser;

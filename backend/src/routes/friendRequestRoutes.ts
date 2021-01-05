@@ -1,14 +1,16 @@
-import express from 'express';
+import { Router } from 'express';
 
 import { isLoggedIn } from '../middlewares/auth.middleware';
-import { getFriendRequest, sendFriendRequest, deleteFriendRequest, acceptFriendRequest } from '../controller/friendRequestController';
+import { verifyRequest } from '../middlewares/friend.request.middleware';
+import { getRecievedFriendRequest, getSentFriendRequest, sendFriendRequest, deleteFriendRequest, acceptFriendRequest } from '../controller/friendRequestController';
 
-const friendRequestRouter = express.Router();
+const friendRequestRouter = Router();
 
 friendRequestRouter.use(isLoggedIn);
 
-friendRequestRouter.get('/get', getFriendRequest);
-friendRequestRouter.post('/send', sendFriendRequest);
+friendRequestRouter.get('/get/sent', getSentFriendRequest);
+friendRequestRouter.get('/get/received', getRecievedFriendRequest);
+friendRequestRouter.post('/send', verifyRequest, sendFriendRequest);
 friendRequestRouter.delete('/delete', deleteFriendRequest);
 friendRequestRouter.post('/accept', acceptFriendRequest);
 

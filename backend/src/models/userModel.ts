@@ -4,6 +4,7 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import { randomBytes, createHash  } from 'crypto';
 
+import { IUser } from '../types'
 import { user } from '../response/errors/index';
 
 const { 
@@ -60,7 +61,13 @@ const userSchema: Schema<IUser> = new Schema({
         type: Date,
         default: Date.now
     },
-    friends: [{ type: ObjectID, ref: 'user', createdAt: Date }],
+    friends: [{ 
+        type: ObjectID, 
+        ref: 'user', 
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }}],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Number,
@@ -71,31 +78,6 @@ const userSchema: Schema<IUser> = new Schema({
     }
 
 });
-
-enum Gender {
-    Male = 1,
-    Female = 0
-}
-
-export interface IUser {
-    id: string,
-    email: string,
-    password: string,
-    personalDetails: {
-        firstName: string,
-        lastName: string,
-        photo: string,
-        gender: Gender,
-        DOB: Date,
-        location: Object
-
-    },
-    createdAt: Date,
-    passwordChangedAt: Date,
-    passwordResetToken: string,
-    passwordResetExpires: number
-    friends: Array<object>,
-}
 
 interface IUserBaseDocument extends Omit<IUser, 'id'>, Document {
     fullName: string;
@@ -118,7 +100,7 @@ userSchema.pre<IUserBaseDocument>('save', async function(next) {
 
 // Virtuals
 userSchema.virtual('fullName').get(function(this: IUser) {
-    return this.personalDetails.firstName + this.personalDetails.lastName;
+    return `${this.personalDetails.firstName} ${this.personalDetails.lastName}`;
 });
 
 userSchema.virtual('getGender').get(function(this: IUser) {

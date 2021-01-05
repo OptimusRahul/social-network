@@ -3,7 +3,8 @@ import validator from 'validator';
 import { createHash } from 'crypto';
 
 import { jwtConfig } from '../config';
-import User, { IUser } from '../models/userModel';
+import User from '../models/userModel';
+import { IUser } from '../types'
 import { authController } from '../response/errors/index';
 import { signToken } from '../helpers';
 import { successResponseHandler, errorResponseHandler } from '../utils';

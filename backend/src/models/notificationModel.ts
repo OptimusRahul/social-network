@@ -1,22 +1,30 @@
 import { ObjectID } from 'mongodb';
-import { model, Schema, Document } from 'mongoose';
+import { model, Schema } from 'mongoose';
+
+import User from './userModel';
+import { notification } from '../config';
+import { notificationService } from '../services/notifications/notifications';
+import { INotification } from '../types'
+
+const { FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_RECEIVED, BIRTHDAY_NOTIFICATION } = notification;
 
 const notificationSchema = new Schema({
     to: {
         type: ObjectID,
+        ref: 'user',
         required: true
     },
     from: {
         type: ObjectID,
+        ref: 'user',
         required: true
     },
     notification:{
         type: String,
-        enum: ['TAGS', 'REQUEST_RECIEVED', 'REQUEST_ACCEPTED', 'BIRTHDAY'],
+        enum: [FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT, BIRTHDAY_NOTIFICATION],
     },
     body: {
         type: String,
-        required: true
     },
     createdAt: {
         type: Date,
@@ -24,12 +32,12 @@ const notificationSchema = new Schema({
     }
 });
 
-export interface INotification extends Document {
-    from: string
-    to: string,
-    notification: string,
-    createdAt: Date
-}
+// DB Middlewares
+notificationSchema.pre<INotification>('save', async function(next) {
+    const user = await User.findById(this.from);
+    this.body = notificationService(this.notification, { name: user?.fullName })
+    next();
+})
 
 const Notification = model<INotification>('notification', notificationSchema);
 

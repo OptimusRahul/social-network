@@ -1,13 +1,17 @@
 import { ObjectID } from 'mongodb';
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
+
+import { IFriendsRequest } from '../types'
 
 const friendsRequestSchema: Schema<IFriendsRequest> = new Schema({
     from: {
         type: ObjectID,
+        ref: 'user',
         required: true,
     },
     to: {
         type: ObjectID,
+        ref: 'user',
         required: true
     },
     status: {
@@ -20,13 +24,6 @@ const friendsRequestSchema: Schema<IFriendsRequest> = new Schema({
         default: Date.now
     }
 });
-
-export interface IFriendsRequest extends Document {
-    from: string
-    to: string
-    status: string
-    createdAt: Date
-}
 
 const FriendRequest = model<IFriendsRequest>('friendRequests', friendsRequestSchema);
 

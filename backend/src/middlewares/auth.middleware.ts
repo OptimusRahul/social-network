@@ -11,62 +11,56 @@ const {
     UNAUTHORIZED_TOKEN, 
     PASSWORD_CHANGED_LOGIN_AGAIN,
     USER_LOGGED_IN } = authMiddleWare;
-const { PASSWORD_CHANGED } = authSuccess;
 
-export const protect = async(req: Request, res: Response, next: NextFunction) => {
-    // 1) Getting token and check if it's there
-    const token = extractJWT(req);
 
-    // 2) Verification token
+const verifyUserState = async(decoded: any, error: string, res: Response, next: NextFunction) => {
+    const { id, iat } = decoded;
     let currentUser;
+    try {
+        currentUser = await User.findById(id);
 
-    try{ 
-
-        const decoded = decodeJWT(token);
-
-        // 3) Check if user still exists
-        currentUser = await User.findById(decoded.id);
         if(!currentUser) {
-            return errorResponseHandler(res, UNAUTHORIZED_TOKEN);
+            return errorResponseHandler(res, error);
         }
 
-        if(currentUser?.changedPasswordAfter(decoded.iat)) {
+        if(currentUser?.changedPasswordAfter(iat)) {
             return errorResponseHandler(res, PASSWORD_CHANGED_LOGIN_AGAIN);
-        }
+        }        
     } catch(error) {
         const { message } = JSON.parse(JSON.stringify(error));
         return errorResponseHandler(res, message);
     }
 
-    req.user = currentUser || '';
     res.locals.user = currentUser;
-
     next();
+} 
+
+const checkUserAuthentication = (type: string, decoded: any, res: Response, next: NextFunction) => {
+    switch(type) {
+        case 'protect':
+            verifyUserState(decoded, UNAUTHORIZED_TOKEN, res, next);
+            break;
+        default:
+            verifyUserState(decoded, USER_LOGGED_IN, res, next);
+            break;
+    }
+}
+
+export const protect = async(req: Request, res: Response, next: NextFunction) => {
+    const decoded = decodeJWT(extractJWT(req));
+    checkUserAuthentication('protect', decoded, res, next);
+    
+    // 1) Getting token and check if it's there
+    // 2) Verification token
 }
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {
-    if(req.cookies.jwt) {
-        const token = req.cookies.jwt;
-        try {
-            const decoded = decodeJWT(token);
+    const { cookies: { jwt } } = req;
 
-            const currentUser = await User.findById(decoded.id);
-            
-            if(!currentUser) {
-                return errorResponseHandler(res, USER_LOGGED_IN)
-            }
-
-            if(currentUser.changedPasswordAfter(decoded.iat)) {
-                return successResponseHandler(res, PASSWORD_CHANGED_LOGIN_AGAIN);
-            }
-
-            res.locals.user = currentUser;
-            return next();
-
-        } catch(error) {
-            const { message } = JSON.parse(JSON.stringify(error));
-            return errorResponseHandler(res, message);
-        }
+    if(jwt) {
+        const decoded = decodeJWT(jwt);
+        checkUserAuthentication('', decoded, res, next);
+    } else {
+        return errorResponseHandler(res, UNAUTHORIZED_USER);
     }
-    next(errorResponseHandler(res, UNAUTHORIZED_USER));
 }

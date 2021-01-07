@@ -7,11 +7,11 @@ import { decodeJWT, extractJWT } from '../helpers';
 import { errorResponseHandler, successResponseHandler } from '../utils';
 import { friendRequestController, authController } from '../response/errors';
 import { notification } from '../config'
-import { createNotificationController } from './notificationController';
+import { createNotificationController, updateNotificationController } from './notificationController';
 
 const { INVALID_FRIEND_REQUEST } = friendRequestController;
 const { INVALID_USER } = authController;
-const { FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT } = notification;
+const { FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER, FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER } = notification;
 
 export const sendFriendRequest = async(req: Request, res: Response) => {
     const { body: { to } } = req;
@@ -24,7 +24,7 @@ export const sendFriendRequest = async(req: Request, res: Response) => {
     try {
         const createObj: any = { from: id, to };
         await FriendRequest.create(createObj);
-        await createNotificationController(req, { to, from: id, type: FRIEND_REQUEST_RECEIVED}, res);
+        createNotificationController(req, { to, from: id, type: FRIEND_REQUEST_RECEIVED}, res);
         successResponseHandler(res, { msg: 'Request sent successfully' });
     } catch(error) {
         console.log(error);
@@ -64,21 +64,27 @@ export const getSentFriendRequest = async(req: Request, res: Response) => {
 }
 
 export const acceptFriendRequest = async(req: Request, res: Response) => {
-    const { body: { request_id, friend_id } } = req;
-    const { id } = decodeJWT(extractJWT(req));
+    const { friend, user, request_id, friendRequest } = res.locals
+    // const { body: { request_id } } = req;
+    // const { id } = decodeJWT(extractJWT(req));
 
     try {
-        const user = await User.findById(id);
-        
-        if(!user) {
-            errorResponseHandler(res, INVALID_USER);
-        }
+        const user_id: any = user._id;
+        const friend_id: any = friend._id;
 
         user?.friends.push(friend_id);
+        friend?.friends.push(user_id);
 
-        await FriendRequest.findByIdAndDelete(request_id);
+        user.save();
+        friend.save();
 
-        user?.save();
+        friendRequest.delete();
+
+        const existingNotificaton = await Notification.findOne({ to: user_id, from: friend_id, notification: FRIEND_REQUEST_RECEIVED });
+        // console.log('----> ',existingNotificaton);
+        await existingNotificaton?.delete();
+        await createNotificationController(req, { to: user_id, from: friend_id, type: FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER }, res);
+        await createNotificationController(req, { to: friend_id, from: user_id, type: FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER}, res);
 
         successResponseHandler(res, 'User accepted the friend Request');
 

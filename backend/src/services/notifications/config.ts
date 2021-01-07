@@ -5,9 +5,14 @@ export const friendRequestNotification = (friendData: any) => {
     return `${name} sent you friend request.`
 }
 
-export const friendRequestAcceptNotification = (friendData: any) => {
+export const friendRequestAcceptNotificationSender = (friendData: any) => {
     const { name } = friendData;
-    return `${name} and You are now friends`
+    return `${name} accepted your friend request`; 
+}
+
+export const friendRequestAcceptNotificationReciever = (friendData: any) => {
+    const { name } = friendData;
+    return `${name} and You are now friends`;
 }
 
 export const birthdayNotification = (friendData: any) => {

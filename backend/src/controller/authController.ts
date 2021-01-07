@@ -51,19 +51,19 @@ export const signUp = async (req: Request, res: Response) => {
     }
 
     if (errors.length > 0) {
-        errorResponseHandler(res, errors);
+        return errorResponseHandler(res, errors);
     } else {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             errors.push({ msg: 'Email already exists' });
-            errorResponseHandler(res, errors);
+            return errorResponseHandler(res, errors);
         } else {
             try {
                 await User.create(body);
                 const responseObj = { msg: 'User Registered Successfully' }
-                successResponseHandler(res, responseObj);
+                return successResponseHandler(res, responseObj);
             } catch (error) {
-                errorResponseHandler(res, error.message);
+                return errorResponseHandler(res, error.message);
             }
         }
     }
@@ -84,7 +84,7 @@ export const login = async (req: Request, res: Response) => {
         const existingUser = await User.findOne({ email }).select('password');
 
         if (!existingUser || !(await existingUser.comparePassword(password))) {
-            errorResponseHandler(res, INCORRECT_PASSWORD, 401);
+            return errorResponseHandler(res, INCORRECT_PASSWORD, 401);
         } else {
             const userObj = {
                 id: existingUser._id,
@@ -103,25 +103,25 @@ export const logout = async (req: Request, res: Response) => {
     });
 
     const responseObj = { token: null, msg: 'User Logged Out Successfully' };
-    successResponseHandler(res, responseObj);
+    return successResponseHandler(res, responseObj);
 }
 
 // Forgot Password
 export const fogotPassword = async (req: Request, res: Response) => {
-    const { body, body: { email } } = req;
+    const { body: { email } } = req;
     if (!email || !validator.isEmail(email)) {
-        errorResponseHandler(res, INVALID_EMAIL)
+        return errorResponseHandler(res, INVALID_EMAIL);
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-        errorResponseHandler(res, INVALID_USER)
+        return errorResponseHandler(res, INVALID_USER)
     }
 
     const resetToken = user?.createPasswordResetToken();
     await user?.save({ validateBeforeSave: false });
 
-    successResponseHandler(res, resetToken)
+    return successResponseHandler(res, resetToken)
 }
 
 // Reset Password
@@ -129,7 +129,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     const { body: { password, passwordConfirm } } = req;
 
     if(password !== passwordConfirm) {
-        errorResponseHandler(res, PASSWORD_MISMATCH);
+        return errorResponseHandler(res, PASSWORD_MISMATCH);
     }
 
     const hashedToken = createHash('sha256').update(req.params.token).digest('hex');
@@ -144,7 +144,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.passwordResetToken = '';
     user.passwordResetExpires = -999999999999999;
     await user.save();
-    successResponseHandler(res, 'password changed successfully');
+    return  successResponseHandler(res, 'password changed successfully');
 }
 
 // Update Password
@@ -152,11 +152,11 @@ export const updatePassword = async (req: Request, res: Response) => {
     const { body: { currentPassword, password, passwordConfirm } } = req;
 
     if(!currentPassword || !password || !passwordConfirm) {
-        errorResponseHandler(res, ENTER_ALL_FIELDS_WARNING);
+        return errorResponseHandler(res, ENTER_ALL_FIELDS_WARNING);
     }
 
     if(password !== passwordConfirm) {
-        errorResponseHandler(res, PASSWORD_MISMATCH);
+        return errorResponseHandler(res, PASSWORD_MISMATCH);
     }
 
     const { user: { id } } = <any>req;
@@ -175,5 +175,5 @@ export const updatePassword = async (req: Request, res: Response) => {
     user.passwordChangedAt = new Date(Date.now());
     await user?.save();
 
-    successResponseHandler(res, 'Password Updated Successfully');
+    return successResponseHandler(res, 'Password Updated Successfully');
 }

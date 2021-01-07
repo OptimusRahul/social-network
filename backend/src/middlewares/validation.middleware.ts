@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const authSchema = Joi.object({
     email: Joi.string().required(),
     password: Joi.string().required().min(8),
-    personalDetails: {
+    personalDetails: Joi.object({
         firstName: Joi.string().required(),
         lastName: Joi.string(),
         photo: Joi.string(),
@@ -14,7 +14,7 @@ export const authSchema = Joi.object({
             work: Joi.string(),
             home: Joi.string()
         }
-    }
+    })
 });
 
 export const friendRequestSchema = Joi.object({

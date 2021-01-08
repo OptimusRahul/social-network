@@ -6,7 +6,8 @@ export { authController } from './controller/auth.controller.error';
 export { authMiddleWare } from './middlewares/auth.middleware.errors';
 
 // FRIENDS REQUEST ERROR
-export { friendRequestController } from './controller/friend.request.controller.errors'
+export { friendRequestController } from './controller/friend.request.controller.errors';
+export { friendRequestMiddleware } from './middlewares/friend.request.middleware';
 
 // INVALID ROUTER ERROR
 export { appRouter } from './routes/app.router';

@@ -2,12 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 
 import User from '../models/userModel';
 import FriendRequest from '../models/friendRequestModel';
-import { authController, friendRequestController } from '../response/errors';
+import { authController, friendRequestController, friendRequestMiddleware } from '../response/errors';
 import { errorResponseHandler, successResponseHandler } from '../utils';
 import { decodeJWT, extractJWT } from '../helpers';
+import { exit } from 'process';
 
 const  { INVALID_USER } = authController;
 const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestController;
+const { EXISTING_REQUEST, ALREADY_FRIENDS } = friendRequestMiddleware;
 
 export const verifyRequest = async (req: Request, res: Response, next: NextFunction) => {
     const { body: { to } } = req;
@@ -18,22 +20,32 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
             return errorResponseHandler(res, INVALID_FRIEND_REQUEST);
         }
 
-        const user = await User.findById(to);
+        const user = await User.findById(to)
         if(!user) {
             return errorResponseHandler(res, INVALID_USER)
         }
 
-        user.friends && user.friends.forEach(id => {
-            console.log(id);
-        })
+        let alreadyFriends = false;
 
-        const existingRequest = await FriendRequest.findOne({ $or: [ 
+        user.friends.forEach(friend => {
+            const friendID = JSON.stringify(friend).substring(1, JSON.stringify(friend).length-1);
+            if(friendID === id) {
+                alreadyFriends = true;
+                // return alreadyFriends;
+            }
+        });
+
+        if(alreadyFriends) {
+            return errorResponseHandler(res, ALREADY_FRIENDS);
+        }
+
+        const existingRequest = await FriendRequest.findOne({ $or: [
             { from: { $eq: to } },
             { to: { $eq: to } }
          ] });
-         
+
         if(existingRequest){
-            return successResponseHandler(res, 'Request Already Exists');
+            return successResponseHandler(res, EXISTING_REQUEST);
         }
 
         res.locals.id = id;
@@ -59,7 +71,7 @@ export const verifyAcceptFriendRequest = async (req: Request, res: Response, nex
         const { to, from } = friendRequest;
 
         const user = await User.findById(id);
-        const friend = await User.findById(from); 
+        const friend = await User.findById(from);
         const sentTo = await User.findById(to);
 
         if(!user || !friend || !sentTo) {

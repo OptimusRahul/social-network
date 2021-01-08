@@ -14,17 +14,17 @@ const { INVALID_USER } = authController;
 const { FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER, FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER } = notification;
 
 export const sendFriendRequest = async(req: Request, res: Response) => {
-    const { body: { to } } = req;
-    const { id } = decodeJWT(extractJWT(req));
+    // const { body: { to } } = req;
+    // const { id } = decodeJWT(extractJWT(req));
 
-    if(id === to) {
-        errorResponseHandler(res, INVALID_FRIEND_REQUEST)
-    }
+    // if(id === to) {
+    //     errorResponseHandler(res, INVALID_FRIEND_REQUEST)
+    // }
 
     try {
-        const createObj: any = { from: id, to };
-        await FriendRequest.create(createObj);
-        createNotificationController(req, { to, from: id, type: FRIEND_REQUEST_RECEIVED}, res);
+        // const createObj: any = { from: id, to };
+        // await FriendRequest.create(createObj);
+        // createNotificationController(req, { to, from: id, type: FRIEND_REQUEST_RECEIVED}, res);
         successResponseHandler(res, { msg: 'Request sent successfully' });
     } catch(error) {
         console.log(error);

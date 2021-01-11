@@ -13,7 +13,7 @@ const {
     FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER, 
     FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER } = notification;
 
-const notificationSchema = new Schema({
+const notificationSchema: Schema<INotification> = new Schema({
     to: {
         type: ObjectID,
         ref: 'user',

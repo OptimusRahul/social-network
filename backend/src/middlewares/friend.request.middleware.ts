@@ -2,14 +2,13 @@ import { NextFunction, Request, Response } from 'express';
 
 import User from '../models/userModel';
 import FriendRequest from '../models/friendRequestModel';
-import { authController, friendRequestController, friendRequestMiddleware } from '../response/errors';
+import { authControllerError, friendRequestControllerError, friendRequestMiddlewareError } from '../response/errors';
 import { errorResponseHandler, successResponseHandler } from '../utils';
 import { decodeJWT, extractJWT } from '../helpers';
-import { exit } from 'process';
 
-const  { INVALID_USER } = authController;
-const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestController;
-const { EXISTING_REQUEST, ALREADY_FRIENDS } = friendRequestMiddleware;
+const  { INVALID_USER } = authControllerError;
+const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestControllerError;
+const { EXISTING_REQUEST, ALREADY_FRIENDS } = friendRequestMiddlewareError;
 
 export const verifyRequest = async (req: Request, res: Response, next: NextFunction) => {
     const { body: { to } } = req;
@@ -20,22 +19,14 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
             return errorResponseHandler(res, INVALID_FRIEND_REQUEST);
         }
 
-        const user = await User.findById(to)
+        const user = await User.findById(to);
         if(!user) {
             return errorResponseHandler(res, INVALID_USER)
         }
 
-        let alreadyFriends = false;
+        const alreadyFriends = await User.findById(to).find({ friends: { $in: id } });
 
-        user.friends.forEach(friend => {
-            const friendID = JSON.stringify(friend).substring(1, JSON.stringify(friend).length-1);
-            if(friendID === id) {
-                alreadyFriends = true;
-                // return alreadyFriends;
-            }
-        });
-
-        if(alreadyFriends) {
+        if(alreadyFriends.length > 0) {
             return errorResponseHandler(res, ALREADY_FRIENDS);
         }
 
@@ -49,6 +40,7 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
         }
 
         res.locals.id = id;
+        res.locals.to = to;
 
     } catch(error) {
         console.log(error);
@@ -58,7 +50,7 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
 }
 
 export const verifyAcceptFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const { body: { request_id } } = req;
+    const { locals: { value: request_id } } = res;
     const { id } = decodeJWT(extractJWT(req));
 
     try {
@@ -85,7 +77,6 @@ export const verifyAcceptFriendRequest = async (req: Request, res: Response, nex
         res.locals.friend = friend;
         res.locals.currentUser = user;
         res.locals.friendRequest = friendRequest;
-        res.locals.request_id = request_id
         next();
     }catch(error) {
         console.log(error);

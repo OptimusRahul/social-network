@@ -5,8 +5,6 @@ import { jwtConfig } from '../../config/index';
 
 class Token {
 
-    
-
     constructor() {
         
     }

@@ -5,22 +5,34 @@ import { createHash } from 'crypto';
 import { jwtConfig } from '../config';
 import User from '../models/userModel';
 import { IUser } from '../types'
-import { authController } from '../response/errors/index';
 import { signToken } from '../helpers';
 import { successResponseHandler, errorResponseHandler } from '../utils';
+import { authControllerError } from '../response/errors';
+import { authControllerSuccess } from '../response/success';
 
 const {
     ENTER_ALL_FIELDS_WARNING,
     INCORRECT_PASSWORD,
     INVALID_EMAIL,
+    DUPLICATE_EMAIL,
     INVALID_USER,
     PASSWORD_MISMATCH,
-    TOKEN_EXPIRED } = authController;
+    TOKEN_EXPIRED } = authControllerError;
 
-const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
+const {
+    REGISTRATION_SUCCESSFUL,
+    LOGIN_SUCESS,
+    LOGOUT_SUCCESS,
+    PASSWORD_CHANGED_SUCCESS,
+    PASSWORD_UPDATE_SUCCESS
+} = authControllerSuccess
+
+const { 
+    JWT_COOKIE_EXPIRES_IN
+} = jwtConfig;
 
 // Create and Send Token
-const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: any, res: any) => {
+const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: Request, res: Response) => {
     const { id } = user;
     const token = signToken(id);
 
@@ -28,71 +40,64 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
         expires: new Date(Date.now().valueOf() + <any>JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: req.secure,
-        credentials: 'include'
     });
 
-    const responseObj = { token, id }
+    const responseObj = { token, id, LOGIN_SUCESS }
     successResponseHandler(res, responseObj);
 }
 
 // Signup
 export const signUp = async (req: Request, res: Response) => {
-    const { body,
-        body: { email, password, passwordConfirm,
-            personalDetails: { firstName, lastName, gender } } } = req;
+    const { locals: { data, data: { email } } } = res;
     let errors: Array<object> = [];
 
-    if (!email || !password || !passwordConfirm || !firstName || !lastName || !gender) {
-        errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
-    }
+    // if (!email || !password || !passwordConfirm || !firstName || !lastName || !gender) {
+    //     errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
+    // }
 
-    if(password !== passwordConfirm) {
-        errors.push({ msg: PASSWORD_MISMATCH })
-    }
+    // if(password !== passwordConfirm) {
+    //     errors.push({ msg: PASSWORD_MISMATCH })
+    // }
 
-    if (errors.length > 0) {
-        return errorResponseHandler(res, errors);
-    } else {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            errors.push({ msg: 'Email already exists' });
-            return errorResponseHandler(res, errors);
-        } else {
-            try {
-                await User.create(body);
-                const responseObj = { msg: 'User Registered Successfully' }
-                return successResponseHandler(res, responseObj);
-            } catch (error) {
-                return errorResponseHandler(res, error.message);
-            }
-        }
+    // if(errors.length > 0) {
+    //     return errorResponseHandler(res, errors);
+    // }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        return errorResponseHandler(res, DUPLICATE_EMAIL);
+    }
+    try {
+        await User.create(data);
+        return successResponseHandler(res, REGISTRATION_SUCCESSFUL);
+    } catch (error) {
+        return errorResponseHandler(res, error.message);
     }
 }
 
 // Login
 export const login = async (req: Request, res: Response) => {
-    const { body: { email, password } } = req;
+    const { locals: { value: { email, password } } } = res;
 
-    let errors = [];
-    if (!email || !password) {
-        errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
+    // let errors = [];
+    // if (!email || !password) {
+    //     errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
+    // }
+
+    // if (errors.length > 0) {
+    //     return errorResponseHandler(res, errors);
+    // }
+
+    const existingUser = await User.findOne({ email }).select('password');
+
+    if (!existingUser || !(await existingUser.comparePassword(password))) {
+        return errorResponseHandler(res, INCORRECT_PASSWORD, 401);
     }
-
-    if (errors.length > 0) {
-        res.status(400).json({ errors });
-    } else {
-        const existingUser = await User.findOne({ email }).select('password');
-
-        if (!existingUser || !(await existingUser.comparePassword(password))) {
-            return errorResponseHandler(res, INCORRECT_PASSWORD, 401);
-        } else {
-            const userObj = {
-                id: existingUser._id,
-                password: existingUser.password
-            }
-            createSendToken(userObj, 200, req, res);
-        }
+    const userObj = {
+        id: existingUser._id,
+        password: existingUser.password
     }
+    createSendToken(userObj, 200, req, res);
 }
 
 // Logout
@@ -102,16 +107,16 @@ export const logout = async (req: Request, res: Response) => {
         httpOnly: true
     });
 
-    const responseObj = { token: null, msg: 'User Logged Out Successfully' };
+    const responseObj = { token: null, msg: LOGOUT_SUCCESS};
     return successResponseHandler(res, responseObj);
 }
 
 // Forgot Password
 export const fogotPassword = async (req: Request, res: Response) => {
-    const { body: { email } } = req;
-    if (!email || !validator.isEmail(email)) {
-        return errorResponseHandler(res, INVALID_EMAIL);
-    }
+    const { locals: { value: { email } } } = res;
+    // if (!email || !validator.isEmail(email)) {
+    //     return errorResponseHandler(res, INVALID_EMAIL);
+    // }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -126,13 +131,13 @@ export const fogotPassword = async (req: Request, res: Response) => {
 
 // Reset Password
 export const resetPassword = async (req: Request, res: Response) => {
-    const { body: { password, passwordConfirm } } = req;
+    const { body: { password, passwordConfirm }, params: { token } } = req;
 
-    if(password !== passwordConfirm) {
-        return errorResponseHandler(res, PASSWORD_MISMATCH);
-    }
+    // if(password !== passwordConfirm) {
+    //     return errorResponseHandler(res, PASSWORD_MISMATCH);
+    // }
 
-    const hashedToken = createHash('sha256').update(req.params.token).digest('hex');
+    const hashedToken = createHash('sha256').update(token).digest('hex');
 
     const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } })
 
@@ -144,25 +149,24 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.passwordResetToken = '';
     user.passwordResetExpires = -999999999999999;
     await user.save();
-    return  successResponseHandler(res, 'password changed successfully');
+    return  successResponseHandler(res, PASSWORD_CHANGED_SUCCESS);
 }
 
 // Update Password
 export const updatePassword = async (req: Request, res: Response) => {
     const { body: { currentPassword, password, passwordConfirm } } = req;
 
-    if(!currentPassword || !password || !passwordConfirm) {
-        return errorResponseHandler(res, ENTER_ALL_FIELDS_WARNING);
-    }
+    // if(!currentPassword || !password || !passwordConfirm) {
+    //     return errorResponseHandler(res, ENTER_ALL_FIELDS_WARNING);
+    // }
 
-    if(password !== passwordConfirm) {
-        return errorResponseHandler(res, PASSWORD_MISMATCH);
-    }
+    // if(password !== passwordConfirm) {
+    //     return errorResponseHandler(res, PASSWORD_MISMATCH);
+    // }
 
     const { user: { id } } = <any>req;
     const user = await User?.findById(id).select('+password');
     
-    console.log(await user?.comparePassword(currentPassword));
     if(!await user?.comparePassword(currentPassword)) {
         return errorResponseHandler(res, INCORRECT_PASSWORD);
     }
@@ -175,5 +179,5 @@ export const updatePassword = async (req: Request, res: Response) => {
     user.passwordChangedAt = new Date(Date.now());
     await user?.save();
 
-    return successResponseHandler(res, 'Password Updated Successfully');
+    return successResponseHandler(res, PASSWORD_UPDATE_SUCCESS);
 }

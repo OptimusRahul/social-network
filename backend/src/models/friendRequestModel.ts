@@ -2,6 +2,9 @@ import { ObjectID } from 'mongodb';
 import { Schema, model } from 'mongoose';
 
 import { IFriendsRequest } from '../types'
+import { friendRequest } from '../config'
+
+const { SENT, RECEIVED } = friendRequest;
 
 const friendsRequestSchema: Schema<IFriendsRequest> = new Schema({
     from: {
@@ -16,8 +19,8 @@ const friendsRequestSchema: Schema<IFriendsRequest> = new Schema({
     },
     status: {
         type: String,
-        enum: ['sent', 'rejected'],
-        default: 'sent'
+        enum: [SENT, RECEIVED],
+        default: SENT
     },
     createdNow: {
         type: Date,

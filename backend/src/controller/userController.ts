@@ -1,17 +1,15 @@
 import { Request, Response } from 'express';
 
-import { decodeJWT, extractJWT } from '../helpers';
 import User from '../models/userModel';
+import { errorResponseHandler, successResponseHandler } from '../utils';
 
 export const getAllUsers = async(req: Request, res: Response) => {
+    const { locals: { id } } = res;
     try {
-        const token = extractJWT(req);
-        const { id } = decodeJWT(token);
-
         const users = await User.find( { _id: { $ne: id } } ).populate('friends');
         
         const usersList = users.map(user => {
-            const { _id, email, personalDetails: { firstName, lastName, photo, gender, DOB, location }, friends, createdAt, fullName, getGender } = user;
+            const { _id, email, personalDetails: { firstName, lastName, photo, DOB, location }, friends, createdAt, fullName, getGender } = user;
             return {
                 _id,
                 email,
@@ -29,8 +27,38 @@ export const getAllUsers = async(req: Request, res: Response) => {
             }
         });
 
-        res.send(usersList);
+        return successResponseHandler(res, usersList);
     }catch(error) {
-        res.send(error);
+        return errorResponseHandler(res, error.message);
     }
 }
+
+export const getUser = async(req: Request, res: Response) => {
+    const { locals: { id } } = res;
+    try {
+        const user = await User.findById(id).populate('friends');
+        return successResponseHandler(res, user);
+    }catch(error) {
+        return errorResponseHandler(res, error.message);
+    }
+}
+
+export const updateUser = async(req: Request, res: Response) => {
+    const { locals: { id, data} } = res;
+    try {
+        await User.findByIdAndUpdate(id, data);
+        return successResponseHandler(res, data);
+    } catch(error) {
+
+    }
+}
+
+export const deleteUser = async(req: Request, res: Response) => {
+    const { locals: { id } } = res;
+    try {
+        await User.findByIdAndDelete(id);
+        return successResponseHandler(res, 'User deleted Successfully');
+    }catch(error) {
+        return errorResponseHandler(res, error.message);
+    }
+}   

@@ -2,12 +2,12 @@
 export { user } from './models/user.model.errors'
 
 // AUTH ERROR
-export { authController } from './controller/auth.controller.error';
-export { authMiddleWare } from './middlewares/auth.middleware.errors';
+export { authMiddleWareError } from './middlewares/auth.middleware.errors';
+export { authControllerError } from './controller/auth.controller.error';
 
 // FRIENDS REQUEST ERROR
-export { friendRequestController } from './controller/friend.request.controller.errors';
-export { friendRequestMiddleware } from './middlewares/friend.request.middleware';
+export { friendRequestMiddlewareError } from './middlewares/friend.request.middleware';
+export { friendRequestControllerError } from './controller/friend.request.controller.errors';
 
 // INVALID ROUTER ERROR
 export { appRouter } from './routes/app.router';

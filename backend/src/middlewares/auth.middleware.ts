@@ -1,16 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { decodeJWT, extractJWT } from '../helpers'
-import { errorResponseHandler, successResponseHandler } from '../utils';
-import { authSuccess } from '../response/success/middlewares/auth.middleware';
-import { authMiddleWare } from '../response/errors';
+import { errorResponseHandler } from '../utils';
+import { authMiddleWareError } from '../response/errors';
 import User from '../models/userModel';
 
 const { 
     UNAUTHORIZED_USER, 
     UNAUTHORIZED_TOKEN, 
     PASSWORD_CHANGED_LOGIN_AGAIN,
-    USER_LOGGED_IN } = authMiddleWare;
+    USER_LOGGED_IN } = authMiddleWareError;
 
 
 const verifyUserState = async(decoded: any, error: string, res: Response, next: NextFunction) => {
@@ -32,6 +31,8 @@ const verifyUserState = async(decoded: any, error: string, res: Response, next: 
     }
 
     res.locals.user = currentUser;
+    res.locals.id = id;
+    res.locals.decoded = decoded;
     next();
 } 
 
@@ -49,9 +50,6 @@ const checkUserAuthentication = (type: string, decoded: any, res: Response, next
 export const protect = async(req: Request, res: Response, next: NextFunction) => {
     const decoded = decodeJWT(extractJWT(req));
     checkUserAuthentication('protect', decoded, res, next);
-    
-    // 1) Getting token and check if it's there
-    // 2) Verification token
 }
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {

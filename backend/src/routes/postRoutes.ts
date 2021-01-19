@@ -1,22 +1,21 @@
 import { Router } from 'express';
 
-import { postSchema } from '../helpers'
-import { isLoggedIn } from '../middlewares/auth.middleware';
-import { postVerfification, reactionVerification } from '../middlewares/post.middleware';
-import { createPost, addReaction, updatePost, deletePost, getPost } from '../controller/postController';
+import { postSchema, queryParamsSchema } from '../helpers';
+import { isLoggedIn, validationMiddleware,  paramsValidation, postVerfification, reactionVerification, verifyExisitngUser } from '../middlewares';
+import { createPost, updatePost, deletePost, getPost } from '../controller/postController';
 
-const {  } = postSchema;
+const { createPostSchema, updatePostSchema, reactionSchema } = postSchema;
+const { id } = queryParamsSchema;
 
 const postRouter = Router();
 
-postRouter.use(isLoggedIn, postVerfification);
-postRouter.get('/post/:id', getPost);
-postRouter.post('/post/:id', createPost);
-postRouter.patch('/post/:id', updatePost);
-postRouter.delete('/post/:id', deletePost);
+postRouter.use(isLoggedIn);
+postRouter.post('/create', validationMiddleware(createPostSchema), verifyExisitngUser, createPost);
 
-postRouter.post('/post/reaction/:id', reactionVerification, addReaction);
+postRouter.get('/get/:id', paramsValidation(id), postVerfification, getPost);
+postRouter.patch('/update/:id', paramsValidation(id), validationMiddleware(updatePostSchema), postVerfification, updatePost);
+postRouter.delete('/delete/:id', paramsValidation(id), postVerfification, deletePost);
 
-
+// postRouter.post('/reaction/:id', paramsValidation(id), validationMiddleware(reactionSchema), postVerfification, addReaction);
 
 export { postRouter };

@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import validator from 'validator';
 import { createHash } from 'crypto';
 
 import { jwtConfig } from '../config';
@@ -11,12 +10,9 @@ import { authControllerError } from '../response/errors';
 import { authControllerSuccess } from '../response/success';
 
 const {
-    ENTER_ALL_FIELDS_WARNING,
     INCORRECT_PASSWORD,
-    INVALID_EMAIL,
     DUPLICATE_EMAIL,
     INVALID_USER,
-    PASSWORD_MISMATCH,
     TOKEN_EXPIRED } = authControllerError;
 
 const {
@@ -50,6 +46,7 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
 export const signUp = async (req: Request, res: Response) => {
     const { locals: { data, data: { email } } } = res;
     let errors: Array<object> = [];
+    console.log(email);
 
     // if (!email || !password || !passwordConfirm || !firstName || !lastName || !gender) {
     //     errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
@@ -77,7 +74,7 @@ export const signUp = async (req: Request, res: Response) => {
 
 // Login
 export const login = async (req: Request, res: Response) => {
-    const { locals: { value: { email, password } } } = res;
+    const { locals: { data: { email, password } } } = res;
 
     // let errors = [];
     // if (!email || !password) {

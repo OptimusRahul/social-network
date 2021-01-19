@@ -11,4 +11,4 @@ export { friendRequest } from './friendRequest/friendRequest';
 export { notification } from './notification/notification';
 
 // POST CONFIGURATION
-export { post, reaction } from './post/post';
+export { post, reaction, comment } from './post/post';

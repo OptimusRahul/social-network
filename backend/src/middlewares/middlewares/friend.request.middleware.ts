@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 
-import User from '../models/userModel';
-import FriendRequest from '../models/friendRequestModel';
-import { authControllerError, friendRequestControllerError, friendRequestMiddlewareError } from '../response/errors';
-import { errorResponseHandler, successResponseHandler } from '../utils';
-import { decodeJWT, extractJWT } from '../helpers';
+import User from '../../models/userModel';
+import FriendRequest from '../../models/friendRequestModel';
+import { authControllerError, friendRequestControllerError, friendRequestMiddlewareError } from '../../response/errors';
+import { errorResponseHandler, successResponseHandler } from '../../utils';
+import { decodeJWT, extractJWT } from '../../helpers';
 
 const  { INVALID_USER } = authControllerError;
 const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestControllerError;

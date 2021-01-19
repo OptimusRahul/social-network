@@ -1,29 +1,27 @@
-import { string } from 'joi';
 import { ObjectID } from 'mongodb';
-import { model, Schema } from 'mongoose'
+import { Schema, model } from 'mongoose';
 
-const commentSchema = new Schema({ 
+import { IComment } from '../types'
+
+const commentSchema: Schema<IComment> = new Schema({ 
     from : {
         type: ObjectID,
         ref: 'user',
         required: true
     },
-    to: {
-        type: ObjectID,
-        ref: 'user',
-    },
-    postId: [{
+    postId: {
         type: ObjectID,
         ref: 'post',
         required: true
-    }],
+    },
     body: {
         type: String,
         minlength: 1
     },
     type: {
         type: String,
-        enum: ['COMMENT', 'REPLY']
+        enum: ['COMMENT', 'REPLY'],
+        default: 'COMMENT'
     },
     createdAt: {
         type: Date,
@@ -31,6 +29,6 @@ const commentSchema = new Schema({
     }
 });
 
-const Comment = model('comment', commentSchema);
+const Comment = model<IComment>('comments', commentSchema);
 
 export default Comment;

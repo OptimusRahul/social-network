@@ -1,8 +1,7 @@
 import { Router } from 'express';
 
+import { validationMiddleware, protect } from '../middlewares';
 import { authSchema } from '../helpers';
-import { protect } from '../middlewares/auth.middleware'
-import { validationMiddleware } from '../middlewares/data.validation.middleware';
 import { signUp, login, logout, fogotPassword, resetPassword, updatePassword } from '../controller/authController';
 import { getAllUsers, getUser, updateUser, deleteUser } from '../controller/userController';
 
@@ -28,7 +27,7 @@ userRouter.use(protect);
 userRouter.get('/getUsers', getAllUsers)
 userRouter.get('/getUser', getUser);
 userRouter.patch('/updatePassword', validationMiddleware(updatePasswordSchema), updatePassword);
-userRouter.patch('/updateUser', validationMiddleware(updatePasswordSchema), updateUser);
+userRouter.patch('/updateUser', validationMiddleware(updateUserSchema), updateUser);
 userRouter.delete('/deleteUser', deleteUser);
 
 export { userRouter };

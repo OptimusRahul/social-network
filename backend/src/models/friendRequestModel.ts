@@ -22,7 +22,7 @@ const friendsRequestSchema: Schema<IFriendsRequest> = new Schema({
         enum: [SENT, RECEIVED],
         default: SENT
     },
-    createdNow: {
+    createdAt: {
         type: Date,
         default: Date.now
     }

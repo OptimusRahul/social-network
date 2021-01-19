@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
-import { isLoggedIn } from '../middlewares/auth.middleware';
-import { verifyRequest, verifyAcceptFriendRequest } from '../middlewares/friend.request.middleware';
+import { isLoggedIn, verifyRequest, verifyAcceptFriendRequest } from '../middlewares';
 import { getRecievedFriendRequest, getSentFriendRequest, sendFriendRequest, deleteFriendRequest, acceptFriendRequest } from '../controller/friendRequestController';
 
 const friendRequestRouter = Router();

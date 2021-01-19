@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { decodeJWT, extractJWT } from '../helpers'
-import { errorResponseHandler } from '../utils';
-import { authMiddleWareError } from '../response/errors';
-import User from '../models/userModel';
+import { decodeJWT, extractJWT } from '../../helpers'
+import { errorResponseHandler } from '../../utils';
+import { authMiddleWareError } from '../../response/errors';
+import User from '../../models/userModel';
 
 const { 
     UNAUTHORIZED_USER, 

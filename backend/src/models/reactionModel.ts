@@ -2,10 +2,11 @@ import { ObjectID } from 'mongodb';
 import { Schema, model, ObjectId } from 'mongoose';
 
 import { reaction } from '../config'
+import { IReaction } from '../types';
 
 const { LIKE, LOVE, HAPPY, SAD, ANGRY } = reaction;
 
-const reactionSchema = new Schema({
+const reactionSchema : Schema<IReaction> = new Schema({
     from: {
         type: ObjectID,
         ref: 'user',
@@ -27,6 +28,6 @@ const reactionSchema = new Schema({
     }
 });
 
-const Reaction = model('reactions', reactionSchema);
+const Reaction = model<IReaction>('reactions', reactionSchema);
 
 export default Reaction;

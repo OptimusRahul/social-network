@@ -13,5 +13,8 @@ export { postVerfification, reactionVerification } from './middlewares/post.midd
 // USER MIDDLEWARE
 export { verifyExisitngUser } from './middlewares/user.middleware';
 
+// REACTION MIDDLEWARE
+export { reactionMiddleware } from './middlewares/reaction.middleware';
+
 // COMMENT MIDDLEWARE
 export { verifyComment } from './middlewares/comment.middleware';

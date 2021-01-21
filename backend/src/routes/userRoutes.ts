@@ -22,7 +22,6 @@ userRouter.get('/logout', logout);
 userRouter.post('/forgotPassword', validationMiddleware(forgotPasswordSchema), fogotPassword);
 userRouter.patch('/resetPassword/:token', validationMiddleware(resetPasswordSchema), resetPassword); 
 
-
 userRouter.use(protect);
 userRouter.get('/getUsers', getAllUsers)
 userRouter.get('/getUser', getUser);

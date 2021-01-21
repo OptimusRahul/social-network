@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, request, Request, Response } from 'express';
 
 import User from '../../models/userModel';
 import FriendRequest from '../../models/friendRequestModel';
@@ -11,22 +11,26 @@ const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestContro
 const { EXISTING_REQUEST, ALREADY_FRIENDS } = friendRequestMiddlewareError;
 
 export const verifyRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const { body: { to } } = req;
-    const { id } =  decodeJWT(extractJWT(req));
-
     try {
+        const { body: { to } } = req;
+        const { id } =  decodeJWT(extractJWT(req));
+
         if(id === to) {
             return errorResponseHandler(res, INVALID_FRIEND_REQUEST);
         }
 
-        const user = await User.findById(to);
+        const user = await User.findById(to).populate('friends');
+        // return res.send(user);
         if(!user) {
             return errorResponseHandler(res, INVALID_USER)
         }
 
-        const alreadyFriends = await User.findById(to).find({ friends: { $in: id } });
-
-        if(alreadyFriends.length > 0) {
+        // const alreadyFriends = await User.findById(to).find({ friends: { $in: id } });
+        // let exisint = await User.findById(to);    
+        // Accepts    
+        const index = user.friends.findIndex((friend:any) => friend.friendId.toString() === to)
+        
+        if(index !== -1) {
             return errorResponseHandler(res, ALREADY_FRIENDS);
         }
 
@@ -34,6 +38,8 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
             { from: { $eq: to } },
             { to: { $eq: to } }
          ] });
+
+        console.log(existingRequest);
 
         if(existingRequest){
             return successResponseHandler(res, EXISTING_REQUEST);
@@ -50,11 +56,16 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
 }
 
 export const verifyAcceptFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const { locals: { value: request_id } } = res;
+    // const { locals: { value: request_id } } = res;
     const { id } = decodeJWT(extractJWT(req));
 
     try {
-        const friendRequest = await FriendRequest.findOne({ _id: request_id });
+
+        console.log(req.body.request_id);
+
+        const friendRequest = await FriendRequest.findById(req.body.request_id);
+
+        console.log(friendRequest);
 
         if(!friendRequest) {
             return errorResponseHandler(res, FRIEND_REQUEST_NOT_FOUND);

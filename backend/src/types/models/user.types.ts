@@ -16,7 +16,7 @@ export interface IUser {
         location: Object
 
     }
-    friends: Array<object>
+    friends: any
     createdAt: Date
     passwordChangedAt: Date
     passwordResetToken: string

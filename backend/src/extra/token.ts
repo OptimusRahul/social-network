@@ -1,7 +1,7 @@
 import { sign, verify } from 'jsonwebtoken';
 import { Request } from 'express';
 
-import { jwtConfig } from '../../config/index';
+import { jwtConfig } from '../config/index';
 
 class Token {
 
@@ -14,7 +14,7 @@ class Token {
     }
     
     extractToken = (id: string) => {
-        return sign({ id }, JWT_SEC)
+        
     }
 
     verifyToken = () => {

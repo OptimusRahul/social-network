@@ -2,14 +2,16 @@ import { Request, Response } from 'express';
 
 import mongoose from 'mongoose';
 import Post from '../models/postModel';
-import { postData, reactionData } from '../helpers';
+import { decodeJWT, postData, reactionData, extractJWT } from '../helpers';
 import { errorResponseHandler, successResponseHandler } from '../utils';
 import { IPost } from '../types';
 
 // Create Post
 export const createPost = async(req:Request, res:Response) => {
-    const { locals: { id, data: { post, scope, to } } } = res;
+    // const { locals: { id, data: { post, scope, to } } } = res;
     // console.log('=======>', id, to, post, scope);
+    const { id } = decodeJWT(extractJWT(req));
+    const { to, post, scope } = req.body;
     try {
         let postObj: IPost;
         if(!to) {
@@ -28,7 +30,7 @@ export const createPost = async(req:Request, res:Response) => {
 }
 
 export const updatePost = async(req:Request, res:Response) => {
-    const { locals: { param, data: { post, scope } } } = res;
+    const { locals: { param, data: { post, scope } } } = res;   
     try {
         let postObj: IPost = !scope ? postData({ post }) : postData({ post, scope });
         await Post.findOneAndUpdate(param, postObj);

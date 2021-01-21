@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { createHash } from 'crypto';
 
-import { jwtConfig } from '../config';
 import User from '../models/userModel';
+import { jwtConfig } from '../config';
 import { IUser } from '../types'
 import { signToken } from '../helpers';
 import { successResponseHandler, errorResponseHandler } from '../utils';

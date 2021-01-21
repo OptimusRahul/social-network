@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { decodeJWT, extractJWT } from '../../helpers'
 import { errorResponseHandler } from '../../utils';
-import { authMiddleWareError } from '../../response/errors';
+import { authMiddleWareError, authControllerError } from '../../response/errors';
 import User from '../../models/userModel';
 
 const { 
@@ -10,14 +10,15 @@ const {
     UNAUTHORIZED_TOKEN, 
     PASSWORD_CHANGED_LOGIN_AGAIN,
     USER_LOGGED_IN } = authMiddleWareError;
-
+    
+const { INVALID_USER } = authControllerError;
 
 const verifyUserState = async(decoded: any, error: string, res: Response, next: NextFunction) => {
     const { id, iat } = decoded;
     let currentUser;
     try {
         currentUser = await User.findById(id);
-
+        
         if(!currentUser) {
             return errorResponseHandler(res, error);
         }
@@ -42,7 +43,7 @@ const checkUserAuthentication = (type: string, decoded: any, res: Response, next
             verifyUserState(decoded, UNAUTHORIZED_TOKEN, res, next);
             break;
         default:
-            verifyUserState(decoded, USER_LOGGED_IN, res, next);
+            verifyUserState(decoded, INVALID_USER, res, next);
             break;
     }
 }

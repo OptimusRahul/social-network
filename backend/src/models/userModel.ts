@@ -61,13 +61,17 @@ const userSchema: Schema<IUser> = new Schema({
         type: Date,
         default: Date.now
     },
-    friends: [{ 
-        type: ObjectID, 
-        ref: 'user', 
+    friends: [{
+        friendId: { 
+            type: ObjectID, 
+            ref: 'user',
+            required: true
+        },
         createdAt: {
             type: Date,
             default: Date.now
-        }}],
+        }
+    }],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Number,

@@ -31,14 +31,9 @@ const postSchema: Schema<IPost> = new Schema({
         default: PUBLIC_POST
     },
     reactions:[{
-        from: {
+        reactionId: {
             type: ObjectID,
-            ref: 'user',
-            required: true
-        },
-        reaction: {
-            type: String,
-            enum: [LIKE, LOVE, HAPPY, SAD, ANGRY],
+            ref: 'reaction',
             required: true
         }
     }],
@@ -59,3 +54,19 @@ const postSchema: Schema<IPost> = new Schema({
 const Post = model<IPost>('post', postSchema);
 
 export default Post;
+
+/*
+
+reactions:[{
+        from: {
+            type: ObjectID,
+            ref: 'user',
+            required: true
+        },
+        reaction: {
+            type: String,
+            enum: [LIKE, LOVE, HAPPY, SAD, ANGRY],
+            required: true
+        }
+    }],
+*/

@@ -16,7 +16,7 @@ export const authSchema = {
                 work: Joi.string(),
                 home: Joi.string()
             }
-        })
+        })// EXPORT 
     }),
 
     loginSchema: Joi.object({

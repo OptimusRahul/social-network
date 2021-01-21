@@ -13,12 +13,15 @@ const { FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_ACCEPT_SU
 
 // Send Friend Request
 export const sendFriendRequest = async(req: Request, res: Response) => {
-    const { locals: { id, to } } = res;
+    // const { locals: { id, to } } = res;
+
+    console.log('friend Request Contorleer')
+
 
     try {
-        const createObj: any = { from: id, to };
+        const createObj: any = { from: res.locals.id, to: req.body.to };
         await FriendRequest.create(createObj);
-        createNotification(req, { to, from: id, type: FRIEND_REQUEST_RECEIVED}, res);
+        createNotification(req, { to: req.body.to, from: res.locals.id, type: FRIEND_REQUEST_RECEIVED}, res);
         successResponseHandler(res, { msg: 'Request sent successfully' });
     } catch(error) {
         console.log(error);
@@ -68,8 +71,8 @@ export const acceptFriendRequest = async(req: Request, res: Response) => {
         const user_id: any = user._id;
         const friend_id: any = friend._id;
 
-        user?.friends.push(friend_id);
-        friend?.friends.push(user_id);
+        user?.friends.push({friendId: friend_id});
+        friend?.friends.push({friendId: user_id});
 
         user.save();
         friend.save();

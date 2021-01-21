@@ -1,7 +1,12 @@
+// JWT HELPER METHODS
 export { signToken } from './token/generateToken';
 export { decodeJWT } from './token/verifyToken';
 export { extractJWT } from './token/extractToken';
 
-export { authSchema, friendRequestSchema, notificationSchema, postSchema, commentSchema } from './joi/joi.schema';
+// JOI SCHEMA
+export { authSchema, friendRequestSchema, notificationSchema, postSchema, commentSchema, reactionSchema } from './joi';
 export { queryParamsSchema } from './joi/joi.query';
+
+// DATA GENERATORS
 export { postData, reactionData, commentData } from './generators/post/postData';
+export { updateUserData, userDetails } from './generators/user/user.data';

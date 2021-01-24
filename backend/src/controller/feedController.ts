@@ -9,7 +9,7 @@ import { errorResponseHandler, successResponseHandler } from '../utils';
 export const feedsController = async(req:Request, res:Response) => {
     try {
         const pageNumber: number = Number(req.query.page) ?? 1;
-        const limit = 1;
+        const limit:number = Number(req.query.limit) ?? 10;
         const skipData = pageNumber * limit;
         const { id } = decodeJWT(extractJWT(req));
         const user = await User.findById(id);

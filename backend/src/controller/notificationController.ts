@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { decodeJWT, extractJWT } from '../helpers';
 
 import Notification from '../models/notificationModel';
-import { successResponseHandler } from '../utils';
+import { successResponseHandler, errorResponseHandler } from '../utils';
 
 // Create Notification
 export const createNotification = async(req: Request, data: any, res: Response) => {
@@ -13,6 +13,7 @@ export const createNotification = async(req: Request, data: any, res: Response) 
         console.log('Notification creeated');
     } catch(error) {
         console.log(error);
+        throw error;
     }
 }
 
@@ -20,8 +21,9 @@ export const getNotification = async(req: Request, res: Response) => {
     const { id } = decodeJWT(extractJWT(req));
     try {
         const notification = await Notification.find({ to: id });
-        successResponseHandler(res, notification);
+        return successResponseHandler(res, notification);
     } catch(error) {
-        console.log(error);
+        const { message } = JSON.parse(JSON.stringify(error));
+        return errorResponseHandler(res, message);
     }
 }

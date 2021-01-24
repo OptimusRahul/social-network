@@ -11,10 +11,7 @@ export { verifyRequest, verifyAcceptFriendRequest } from './middlewares/friend.r
 export { postVerfification, reactionVerification } from './middlewares/post.middleware';
 
 // USER MIDDLEWARE
-export { verifyExisitngUser } from './middlewares/user.middleware';
+export { verifyExisitngFriends } from './middlewares/user.middleware';
 
 // REACTION MIDDLEWARE
 export { reactionMiddleware } from './middlewares/reaction.middleware';
-
-// COMMENT MIDDLEWARE
-export { verifyComment } from './middlewares/comment.middleware';

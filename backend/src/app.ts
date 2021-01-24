@@ -5,7 +5,7 @@ import { userRouter } from './routes/userRoutes';
 import { friendRequestRouter } from './routes/friendRequestRoutes';
 import { notificationRouter } from './routes/notificationRoutes';
 import { postRouter } from './routes/postRoutes';
-import { commentRouter } from './routes/commentRoutes';
+import { feedRouter } from './routes/feedRoutes';
 import { errorResponseHandler } from './utils/index';
 import { appRouter } from './response/errors'
 
@@ -22,9 +22,9 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/friendRequests', friendRequestRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/posts', postRouter);
-app.use('/api/v1/comments', commentRouter);
+app.use('/api/v1/feeds', feedRouter);
 
-app.all('*', (req, res, next) => {
+app.use('*', (req, res, next) => {
     return next(errorResponseHandler(res, INVALID_ROUTE, 404));
 });
 

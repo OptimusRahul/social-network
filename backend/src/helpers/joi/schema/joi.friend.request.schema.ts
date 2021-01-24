@@ -2,14 +2,14 @@ import Joi from '@hapi/joi';
 
 export const friendRequestSchema = {
     sendfriendRequestSchema: Joi.object({
-        to: Joi.string().required()
+        to: Joi.string().length(24).hex().required()
     }),
     
     deleteFriendRequestSchema: Joi.object({
-        id: Joi.string().required()
+        id: Joi.string().length(24).hex().required()
     }),
 
     acceptFriendRequestSchema: Joi.object({
-        request_id: Joi.string().required()
+        request_id: Joi.string().length(24).hex().required()
     })
 }

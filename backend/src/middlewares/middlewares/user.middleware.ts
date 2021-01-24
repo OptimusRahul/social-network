@@ -7,19 +7,29 @@ import { errorResponseHandler } from '../../utils';
 
 const { INVALID_USER } = authControllerError;
 
-export const verifyExisitngUser = async(req:Request, res:Response, next:NextFunction) => {
+export const verifyExisitngFriends = async(req:Request, res:Response, next:NextFunction) => {
     const { id } = decodeJWT(extractJWT(req));
     const { locals: { data: { to } } } = res;
     try {
-        const existingUser = await User.findById(to);
-        if(!existingUser) {
-            return errorResponseHandler(res, INVALID_USER);
-        }
-
-        const alreadyFriends = await User.findById(to).find({ friends: { $in: id } });
-
-        if(alreadyFriends.length <= 0) {
-            return errorResponseHandler(res, 'You both are not friends');
+        if(req.body.to) {
+            console.log('test', req.body.to);
+            const existingUser = await User.findById(req.body.to);
+            if(!existingUser) {
+                return errorResponseHandler(res, INVALID_USER);
+            }
+            let alreadyFriends = false;
+            console.log(existingUser.friends);
+            existingUser.friends.map((friend: any) => {
+                console.log(typeof(friend), ' ', typeof(id));
+                if(friend.friendId.toString() === id) {
+                    alreadyFriends = true;
+                }    
+                return alreadyFriends;
+            })
+            console.log(alreadyFriends);
+            if(!alreadyFriends) {
+                return errorResponseHandler(res, 'You both are not friends');
+            }
         }
     } catch(error) {
         console.log(error);

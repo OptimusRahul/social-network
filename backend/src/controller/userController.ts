@@ -49,7 +49,7 @@ export const updateUser = async(req: Request, res: Response) => {
         await User.findByIdAndUpdate(id, data);
         return successResponseHandler(res, data);
     } catch(error) {
-
+        return errorResponseHandler(res, error.message);
     }
 }
 

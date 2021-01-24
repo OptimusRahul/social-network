@@ -5,11 +5,7 @@ import { errorResponseHandler } from '../../utils';
 import { authMiddleWareError, authControllerError } from '../../response/errors';
 import User from '../../models/userModel';
 
-const { 
-    UNAUTHORIZED_USER, 
-    UNAUTHORIZED_TOKEN, 
-    PASSWORD_CHANGED_LOGIN_AGAIN,
-    USER_LOGGED_IN } = authMiddleWareError;
+const { UNAUTHORIZED_USER, UNAUTHORIZED_TOKEN,PASSWORD_CHANGED_LOGIN_AGAIN } = authMiddleWareError;
     
 const { INVALID_USER } = authControllerError;
 
@@ -55,8 +51,8 @@ export const protect = async(req: Request, res: Response, next: NextFunction) =>
 
 export const isLoggedIn = async(req: Request, res: Response, next: NextFunction) => {
     const { cookies: { jwt } } = req;
-
-    if(jwt) {
+    console.log(jwt);
+    if(jwt && jwt !== undefined) {
         const decoded = decodeJWT(jwt);
         checkUserAuthentication('', decoded, res, next);
     } else {

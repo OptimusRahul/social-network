@@ -2,11 +2,24 @@ import { Request, Response } from 'express';
 
 import Post from '../models/postModel';
 import Reaction from '../models/reactionModel';
+import { createNotification } from './notificationController';
 import { successResponseHandler } from '../utils';
+import { decodeJWT, extractJWT } from '../helpers';
 
-export const reactionOperation = async(req:Request, res:Response) => {
-    const { post_id, from, type } = req.body;
+export const reactionController = async(req:Request, res:Response) => {
+    const { post_id, type } = req.body;
     try {
+        // const existingReaction = await Posts.findById(post_id).find({ reactions: { $in: user_id } })
+        // if(existingReaction.length <= 0){
+        //     return errorResponseHandler(res, "You haven't reacted the post");
+        // }
+        let from = req.body.from;
+
+        if(!from) {
+            const { id } = decodeJWT(extractJWT(req));
+            from = id;
+        }
+
         const existingReaction = await Reaction.findOne({ post_id, from });
         const exisitingPost = await Post.findById(post_id);
         
@@ -31,8 +44,6 @@ export const reactionOperation = async(req:Request, res:Response) => {
         await exisitingPost?.save();
         await existingReaction.delete();
         return successResponseHandler(res, 'Reaction deleted');
-
-
     } catch(error) {
         console.log(error);
     }

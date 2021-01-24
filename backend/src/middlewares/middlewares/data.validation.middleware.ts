@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+
+import mongoose from 'mongoose';
 import { Schema } from '@hapi/joi';
-import { errorResponseHandler } from '../../utils';
+import { errorResponseHandler } from '../../utils';;
 
 export const validationMiddleware = (schema: Schema) => {
     return (req: Request, res:Response, next: NextFunction) => {
@@ -21,11 +23,15 @@ export const paramsValidation = (schema: Schema) => {
         const { params: { id } } = req;
         const result = schema.validate(id);
         const { error, value } = result;
-        
 
         if(error) {
             return errorResponseHandler(res, error?.details[0].message, 422);
         }
+
+        // if(!mongoose.Types.ObjectId.isValid(id)) {
+        //     return errorResponseHandler(res, 'Invalid ID');
+        // }
+
         res.locals.param = value;
         next();
     }

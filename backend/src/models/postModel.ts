@@ -1,3 +1,5 @@
+import { required } from '@hapi/joi';
+import { triggerAsyncId } from 'async_hooks';
 import { ObjectID } from 'mongodb';
 import { Schema, model } from 'mongoose';
 
@@ -37,9 +39,12 @@ const postSchema: Schema<IPost> = new Schema({
             required: true
         }
     }],
-    commentId: [{
-        type: ObjectID,
-        ref: 'comment',
+    comments: [{
+        commentID: {
+            type: ObjectID,
+            ref: 'comment',
+            required: true
+        },
         createdAt: {
             type: Date,
             default: Date.now

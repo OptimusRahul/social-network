@@ -4,28 +4,16 @@ import { createHash } from 'crypto';
 import User from '../models/userModel';
 import { jwtConfig } from '../config';
 import { IUser } from '../types'
-import { signToken } from '../helpers';
+import { decodeJWT, extractJWT, signToken } from '../helpers';
 import { successResponseHandler, errorResponseHandler } from '../utils';
 import { authControllerError } from '../response/errors';
 import { authControllerSuccess } from '../response/success';
 
-const {
-    INCORRECT_PASSWORD,
-    DUPLICATE_EMAIL,
-    INVALID_USER,
-    TOKEN_EXPIRED } = authControllerError;
+const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED } = authControllerError;
 
-const {
-    REGISTRATION_SUCCESSFUL,
-    LOGIN_SUCESS,
-    LOGOUT_SUCCESS,
-    PASSWORD_CHANGED_SUCCESS,
-    PASSWORD_UPDATE_SUCCESS
-} = authControllerSuccess
+const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authControllerSuccess
 
-const { 
-    JWT_COOKIE_EXPIRES_IN
-} = jwtConfig;
+const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
 
 // Create and Send Token
 const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: Request, res: Response) => {
@@ -44,28 +32,13 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
 
 // Signup
 export const signUp = async (req: Request, res: Response) => {
-    const { locals: { data, data: { email } } } = res;
-    let errors: Array<object> = [];
-    console.log(email);
-
-    // if (!email || !password || !passwordConfirm || !firstName || !lastName || !gender) {
-    //     errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
-    // }
-
-    // if(password !== passwordConfirm) {
-    //     errors.push({ msg: PASSWORD_MISMATCH })
-    // }
-
-    // if(errors.length > 0) {
-    //     return errorResponseHandler(res, errors);
-    // }
-
+    const { body, body: { email } } = req;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         return errorResponseHandler(res, DUPLICATE_EMAIL);
     }
     try {
-        await User.create(data);
+        await User.create(body);
         return successResponseHandler(res, REGISTRATION_SUCCESSFUL);
     } catch (error) {
         return errorResponseHandler(res, error.message);
@@ -74,16 +47,7 @@ export const signUp = async (req: Request, res: Response) => {
 
 // Login
 export const login = async (req: Request, res: Response) => {
-    const { locals: { data: { email, password } } } = res;
-
-    // let errors = [];
-    // if (!email || !password) {
-    //     errors.push({ msg: ENTER_ALL_FIELDS_WARNING });
-    // }
-
-    // if (errors.length > 0) {
-    //     return errorResponseHandler(res, errors);
-    // }
+    const { body: { email, password } } = req;
 
     const existingUser = await User.findOne({ email }).select('password');
 
@@ -99,6 +63,11 @@ export const login = async (req: Request, res: Response) => {
 
 // Logout
 export const logout = async (req: Request, res: Response) => {
+
+    if(!req.cookies.jwt) {
+        return errorResponseHandler(res, 'No user logged In');
+    }
+
     res.cookie('jwt', '', {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true
@@ -110,11 +79,8 @@ export const logout = async (req: Request, res: Response) => {
 
 // Forgot Password
 export const fogotPassword = async (req: Request, res: Response) => {
-    const { locals: { value: { email } } } = res;
-    // if (!email || !validator.isEmail(email)) {
-    //     return errorResponseHandler(res, INVALID_EMAIL);
-    // }
-
+    const { body: { email } } = req;
+    
     const user = await User.findOne({ email });
     if (!user) {
         return errorResponseHandler(res, INVALID_USER)
@@ -128,11 +94,7 @@ export const fogotPassword = async (req: Request, res: Response) => {
 
 // Reset Password
 export const resetPassword = async (req: Request, res: Response) => {
-    const { body: { password, passwordConfirm }, params: { token } } = req;
-
-    // if(password !== passwordConfirm) {
-    //     return errorResponseHandler(res, PASSWORD_MISMATCH);
-    // }
+    const { body: { password }, params: { token } } = req;
 
     const hashedToken = createHash('sha256').update(token).digest('hex');
 
@@ -151,17 +113,9 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 // Update Password
 export const updatePassword = async (req: Request, res: Response) => {
-    const { body: { currentPassword, password, passwordConfirm } } = req;
+    const { body: { currentPassword, password } } = req;
 
-    // if(!currentPassword || !password || !passwordConfirm) {
-    //     return errorResponseHandler(res, ENTER_ALL_FIELDS_WARNING);
-    // }
-
-    // if(password !== passwordConfirm) {
-    //     return errorResponseHandler(res, PASSWORD_MISMATCH);
-    // }
-
-    const { user: { id } } = <any>req;
+    const { id } = decodeJWT(extractJWT(req));     
     const user = await User?.findById(id).select('+password');
     
     if(!await user?.comparePassword(currentPassword)) {

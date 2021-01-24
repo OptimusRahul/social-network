@@ -5,7 +5,7 @@ export interface IPost extends Document {
     from: string
     to: string
     post: string,
-    commentId: Array<object>
+    comments: Array<object>
     scope: string
     reactions: Array<object>
     createdAt: Date

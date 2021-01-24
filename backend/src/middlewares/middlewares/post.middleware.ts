@@ -4,7 +4,6 @@ import Posts from '../../models/postModel';
 import { errorResponseHandler } from '../../utils';
 
 export const postVerfification = async(req: Request, res: Response, next: NextFunction) => {
-    // const { locals: { param } } = res;
     let post_id;
     if(req.params.id) {
         post_id = req.params.id;
@@ -12,9 +11,8 @@ export const postVerfification = async(req: Request, res: Response, next: NextFu
         post_id = req.body.post_id;
     }
     try {
-        console.log(post_id);
         const existingPost = await Posts.findById(post_id);
-        console.log(existingPost);
+        
         if(!existingPost){
             return errorResponseHandler(res, 'Post does not exist!!')
         }

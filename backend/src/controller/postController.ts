@@ -41,11 +41,22 @@ export const updatePost = async(req:Request, res:Response) => {
 }
 
 export const deletePost = async(req:Request, res:Response) => {
-    const { locals: { param } } = res;
+    const { id } = req.params;
     try {
-        await Post.findByIdAndDelete(param);
+        await Post.findByIdAndDelete(id);
         successResponseHandler(res, 'Post deleted successfully');
     } catch(error){
+        console.log(error);
+    }
+}
+
+export const getAllPosts = async(req:Request, res:Response) => {
+    try {
+        const { id } = decodeJWT(extractJWT(req));
+
+        const posts = await Post.find({ from: id}).populate('comments reactions');
+        successResponseHandler(res, posts);
+    } catch(error) {
         console.log(error);
     }
 }
@@ -54,36 +65,6 @@ export const getPost = async(req: Request, res:Response) => {
     const { locals: { post } } = res;
     successResponseHandler(res, post);
 }
-
-// Add Reaction and Update Reaction
-// export const addReaction = async(req: Request, res: Response) => {
-//     let { locals: { post, param } } = res;
-//     const { body: { from } } = req;
-//     const newReaction = req.body.reaction;
-//     try {
-//         // const p = await Post.findById(param);
-//         const existingPost = await Post.findById(param).find({ reactions: { $elemMatch: { from } } })
-//         if(existingPost) {
-//             const reaction = existingPost[0].reactions;
-//             console.log(reaction[0].reaction);
-//             if(reaction=== newReaction) {
-//                 let x = await Post.findOneAndUpdate({}, { $pull: { from } })
-//                 successResponseHandler(res, x);
-//             } else {
-
-//             }
-
-//         }
-//         // p?.reactions.push({ from, reaction });
-
-//         // p?.save();
-
-//         // successResponseHandler(res, p);
-
-//     } catch(error) {
-//         console.warn(error);
-//     }
-// }
 
 // Get Reaction
 export const getPostReactions = (req: Request, res: Response) => {

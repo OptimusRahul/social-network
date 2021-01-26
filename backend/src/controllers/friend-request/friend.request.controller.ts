@@ -20,7 +20,8 @@ export const sendFriendRequest = async(req: Request, res: Response) => {
         createNotification(req, { to: req.body.to, from: res.locals.id, type: FRIEND_REQUEST_RECEIVED}, res);
         successResponseHandler(res, { msg: 'Request sent successfully' });
     } catch(error) {
-        console.log(error);
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     }
 }
 
@@ -43,6 +44,7 @@ export const deleteFriendRequest = async(req: Request, res: Response) => {
         successResponseHandler(res, 'Request Deleted Successfully');        
     } catch(error) {
         console.log(error);
+        return errorResponseHandler(res, error.message);
     }
 }
 
@@ -55,6 +57,7 @@ export const getRecievedFriendRequest = async(req: Request, res: Response) => {
         successResponseHandler(res, friendRequests);
     }catch(error) {
         console.log(error);
+        return errorResponseHandler(res, error.message);
     }
 }
 
@@ -67,6 +70,7 @@ export const getSentFriendRequest = async(req: Request, res: Response) => {
         successResponseHandler(res, friendRequests);
     }catch(error) {
         console.log(error);
+        return errorResponseHandler(res, error.message);
     }
 }
 

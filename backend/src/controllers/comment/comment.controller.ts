@@ -20,7 +20,8 @@ export const createComment = async(req:Request, res:Response) => {
         post?.save();
         successResponseHandler(res, comment);
     } catch(error) {
-        console.log(error);
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     }
 }
 
@@ -44,7 +45,8 @@ export const updateComment = async(req:Request, res:Response) => {
         existingComment.update(commentObj);
         successResponseHandler(res, 'Comment updated');
     } catch(error) {
-
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     }
 }
 
@@ -76,6 +78,7 @@ export const deleteComment = async(req:Request, res: Response) => {
         // }
         successResponseHandler(res, exisitingPost);
     } catch(error) {
-
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     }
 }

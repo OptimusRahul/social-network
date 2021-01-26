@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 
 import { User } from '../../models';
-import { user } from '../../response/errors';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
 
 export const getAllUsers = async(req: Request, res: Response) => {
-    const { locals: { id } } = res;
     try {
+        const { locals: { id } } = res;
         const users = await User.find( { _id: { $ne: id } } ).populate('friends');
         
         const usersList = users.map(user => {
@@ -30,26 +29,29 @@ export const getAllUsers = async(req: Request, res: Response) => {
 
         return successResponseHandler(res, usersList);
     }catch(error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
 }
 
 export const getUser = async(req: Request, res: Response) => {
-    const { locals: { id } } = res;
     try {
+        const { locals: { id } } = res;
         const user = await User.findById(id).populate('friends');
         return successResponseHandler(res, user);
     }catch(error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
 }
 
 export const updateUser = async(req: Request, res: Response) => {
-    const { locals: { id, data} } = res;
     try {
+        const { locals: { id, data} } = res;
         await User.findByIdAndUpdate(id, data);
         return successResponseHandler(res, data);
     } catch(error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
 }
@@ -72,16 +74,18 @@ export const deleteFriend = async(req:Request, res:Response) => {
         return successResponseHandler(res, 'friend Deleted')
 
     }catch(error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
 }
 
 export const deleteUser = async(req: Request, res: Response) => {
-    const { locals: { id } } = res;
     try {
+        const { locals: { id } } = res;
         await User.findByIdAndDelete(id);
         return successResponseHandler(res, 'User deleted Successfully');
     }catch(error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
 }   

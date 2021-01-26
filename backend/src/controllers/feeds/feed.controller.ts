@@ -49,7 +49,8 @@ export const feedsController = async(req:Request, res:Response) => {
 
         successResponseHandler(res, userPost);
     }catch(error) {
-
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     } 
 }
 
@@ -74,6 +75,7 @@ export const profileViewController = async(req:Request, res:Response) => {
 
         successResponseHandler(res, visitingUserProfile);
     }catch(error) {
-    
+        console.log(error.message);
+        return errorResponseHandler(res, error.message);
     }
 }

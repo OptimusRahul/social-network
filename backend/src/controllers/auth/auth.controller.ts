@@ -5,14 +5,12 @@ import { User } from '../../models';
 import { jwtConfig } from '../../config';
 import { IUser } from '../../types'
 import { decodeJWT, extractJWT, signToken } from '../../helpers';
-import { successResponseHandler, errorResponseHandler } from '../../utils';
+import { successResponseHandler, errorResponseHandler, catchAsyncController } from '../../utils';
 import { authControllerError } from '../../response/errors';
 import { authControllerSuccess } from '../../response/success';
 
 const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED } = authControllerError;
-
-const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authControllerSuccess
-
+const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authControllerSuccess;
 const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
 
 // Create and Send Token
@@ -31,7 +29,7 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
 }
 
 // Signup
-export const signUp = async (req: Request, res: Response) => {
+export const signUp = catchAsyncController(async (req: Request, res: Response) => {
     const { body, body: { email } } = req;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -41,9 +39,10 @@ export const signUp = async (req: Request, res: Response) => {
         await User.create(body);
         return successResponseHandler(res, REGISTRATION_SUCCESSFUL);
     } catch (error) {
+        console.log(error.message);
         return errorResponseHandler(res, error.message);
     }
-}
+});
 
 // Login
 export const login = async (req: Request, res: Response) => {

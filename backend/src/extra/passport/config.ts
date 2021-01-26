@@ -2,7 +2,7 @@ import { Request } from 'express';
 import passport, { Strategy } from 'passport';
 import { config } from 'dotenv';
 
-import User from '../../models/userModel';
+import User from '../../models/user.model';
 
 config();
 

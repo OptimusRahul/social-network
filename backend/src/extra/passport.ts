@@ -1,5 +1,5 @@
 import { Strategy } from 'passport-local';
-import User from '../models/userModel';
+import User from '../models/user.model';
 import bcrypt from 'bcryptjs';
 
 export default function(passport: any) {

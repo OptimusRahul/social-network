@@ -8,5 +8,5 @@ export { authSchema, friendRequestSchema, notificationSchema, postSchema, commen
 export { queryParamsSchema } from './joi/joi.query';
 
 // DATA GENERATORS
-export { postData, reactionData, commentData } from './generators/post/postData';
+export { postData, reactionData, commentData } from './generators/post/post.data';
 export { updateUserData, userDetails } from './generators/user/user.data';

@@ -29,3 +29,18 @@ export const birthdayNotification = (friendData: any) => {
         default: return `${name} has birthday on ${formatDate}`
     }
 }
+
+export const reactionNotification = (friendData: any) => {
+    const { name } = friendData;
+    return `${name} reacted to your post.`
+}
+
+export const tagNotification = (friendData: any) => {
+    const { name } = friendData;
+    return `${name} tagged you in a post.`
+}
+
+export const commentNotification = (friendData: any) => {
+    const { name } = friendData;
+    return `${name} commented on your post`
+}

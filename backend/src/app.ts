@@ -1,11 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 
-import { userRouter } from './routes/userRoutes';
-import { friendRequestRouter } from './routes/friendRequestRoutes';
-import { notificationRouter } from './routes/notificationRoutes';
-import { postRouter } from './routes/postRoutes';
-import { feedRouter } from './routes/feedRoutes';
+import { userRouter, friendRequestRouter, notificationRouter, postRouter, feedRouter } from './routes';
 import { errorResponseHandler } from './utils/index';
 import { appRouter } from './response/errors'
 

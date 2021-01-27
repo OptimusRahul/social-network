@@ -10,4 +10,4 @@ export { friendRequestMiddlewareError } from './middlewares/friend.request.middl
 export { friendRequestControllerError } from './controller/friend.request.controller.errors';
 
 // INVALID ROUTER ERROR
-export { appRouter } from './routes/app.router';
+export { appRouter } from '../routes/app.router';

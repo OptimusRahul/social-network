@@ -4,6 +4,11 @@ import mongoose from 'mongoose';
 import { decodeJWT, extractJWT } from '../../helpers';
 import { Notification } from '../../models';
 import { successResponseHandler, errorResponseHandler } from '../../utils';
+import { notificationSuccess } from '../../response';
+
+const { 
+    NOTIFICATION_SUCCESS 
+} = notificationSuccess;
 
 // Create Notification
 export const createNotification = async(req: Request, data: any, res: Response) => {
@@ -11,7 +16,7 @@ export const createNotification = async(req: Request, data: any, res: Response) 
     try {
         const notificationObj: any = { to, from, notification: type };
         await Notification.create(notificationObj);
-        console.log('Notification creeated');
+        console.log('Notification created');
     } catch(error) {
         console.log(error);
         throw error;
@@ -26,7 +31,7 @@ export const getNotification = async(req: Request, res: Response) => {
             { $match: { to: mongoose.Types.ObjectId(id) } },
             { $sort: { 'createdAt': -1 } }
         ])
-        return successResponseHandler(res, notification);
+        return successResponseHandler(res, NOTIFICATION_SUCCESS, notification);
     } catch(error) {
         const { message } = JSON.parse(JSON.stringify(error));
         return errorResponseHandler(res, message);

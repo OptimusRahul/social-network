@@ -3,6 +3,11 @@ import { Request, Response } from 'express';
 import { Post, Comment } from '../../models';
 import { commentData, decodeJWT, extractJWT } from '../../helpers';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
+import { commentFail, commentSuccess, authError } from '../../response';
+
+const { UNAUTHORIZED_ERROR } = authError;
+const { COMMENT_DOES_NOT_EXIST, COMMENT_CREATED_FAIL, COMMENT_DELETED_FAIL, COMMENT_UPDATED_FAIL } = commentFail;
+const { COMMENT_CREATED_SUCCESS, COMMENT_UPDATED_SUCCESS, COMMENT_DELETED_SUCCESS } = commentSuccess;
 
 // Create Comment
 export const createComment = async(req:Request, res:Response) => {
@@ -18,10 +23,10 @@ export const createComment = async(req:Request, res:Response) => {
         const post = await Post.findById(post_id);
         post?.comments.push({ commentID: comment._id});
         post?.save();
-        successResponseHandler(res, comment);
+        return successResponseHandler(res, COMMENT_CREATED_SUCCESS, comment);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, error.message, 304);
     }
 }
 
@@ -32,21 +37,21 @@ export const updateComment = async(req:Request, res:Response) => {
         const { id } = decodeJWT(extractJWT(req)); 
         const existingComment = await Comment.findById(comment_id);
         if(!existingComment) {
-            return errorResponseHandler(res, 'Comment does not exist');
+            return errorResponseHandler(res, COMMENT_DOES_NOT_EXIST, 404);
         }
 
         console.log(existingComment, id);
 
         if(existingComment.from.toString() !== id) {
-            return errorResponseHandler(res, `You're not authorized to perform this operation`);
+            return errorResponseHandler(res, UNAUTHORIZED_ERROR, 401);
         }
 
         const commentObj = commentData({ body });
         existingComment.update(commentObj);
-        successResponseHandler(res, 'Comment updated');
+        return successResponseHandler(res, COMMENT_UPDATED_SUCCESS, existingComment, 204);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, error.message, 304);
     }
 }
 
@@ -58,11 +63,11 @@ export const deleteComment = async(req:Request, res: Response) => {
 
         const deleteComment = await Comment.findById(comment_id);
         if(!deleteComment) {
-            return errorResponseHandler(res, 'Comment doesnot exists');
+            return errorResponseHandler(res, COMMENT_DOES_NOT_EXIST, 404);
         }
         
         if(deleteComment.from.toString() !== id) {
-            return errorResponseHandler(res, `You're not authorized to perform this operation`);
+            return errorResponseHandler(res, UNAUTHORIZED_ERROR, 401);
         }
         const exisitingPost = await Post.findById(post_id);
 
@@ -71,14 +76,9 @@ export const deleteComment = async(req:Request, res: Response) => {
         await exisitingPost?.save();
         await deleteComment?.delete();
 
-        // if(updatePost?.comments.includes(comment_id)) {
-        //     const index = updatePost.commentId.indexOf(comment_id);
-        //     updatePost.commentId.splice(index, 1);
-        //     updatePost.save();
-        // }
-        successResponseHandler(res, exisitingPost);
+        return successResponseHandler(res, COMMENT_DELETED_SUCCESS, deleteComment, 204);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, error.message, 304);
     }
 }

@@ -50,7 +50,7 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
          ] });
 
         if(existingRequest){
-            return successResponseHandler(res, EXISTING_REQUEST);
+            return successResponseHandler(res, EXISTING_REQUEST, '');
         }
 
         res.locals.id = id;

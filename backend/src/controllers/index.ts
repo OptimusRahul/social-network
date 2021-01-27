@@ -11,7 +11,7 @@ export { acceptFriendRequest, deleteFriendRequest, getRecievedFriendRequest, get
 export { createNotification, getNotification } from './notfication/notification.controller';
 
 // EXPORT POST CONTROLLER
-export { createPost, deletePost, getAllPosts, getPost, getPostReactions, updatePost } from './post/post.controller';
+export { createPost, deletePost, getAllPosts, getPost, updatePost } from './post/post.controller';
 
 // EXPORT REACTION CONTROLLER
 export { reactionController } from './reaction/reaction.controller';

@@ -2,13 +2,33 @@ import { Request, Response } from 'express';
 
 import { FriendRequest, Notification, User } from '../../models';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
-import { friendRequestControllerError, authControllerError } from '../../response/errors';
+import { friendRequestSuccess, userError, authError } from '../../response';
 import { notification } from '../../config'
 import { createNotification } from '../';
 import { decodeJWT, extractJWT } from '../../helpers';
 
-const { INVALID_USER } = authControllerError;
-const { FRIEND_REQUEST_RECEIVED, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER, FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER } = notification;
+const { 
+    INVALID_USER
+} = userError;
+
+const { 
+    UNAUTHORIZED_ERROR, 
+    INVALID_ID 
+} = authError;
+
+const { 
+    FRIEND_REQUEST_SENT_SUCCESS, 
+    FRIEND_REQUEST_DELETE_SUCCESS, 
+    FRIEND_REQUEST_RECEIVED_LIST, 
+    FRIEND_REQUEST_SENT_LIST, 
+    FRIEND_REQUEST_ACCEPT_SUCCESS 
+} = friendRequestSuccess;
+
+const { 
+    FRIEND_REQUEST_RECEIVED, 
+    FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER, 
+    FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER 
+} = notification;
 
 // Send Friend Request
 export const sendFriendRequest = async(req: Request, res: Response) => {
@@ -18,7 +38,7 @@ export const sendFriendRequest = async(req: Request, res: Response) => {
         const createObj: any = { from: id, to };
         await FriendRequest.create(createObj);
         createNotification(req, { to: req.body.to, from: res.locals.id, type: FRIEND_REQUEST_RECEIVED}, res);
-        successResponseHandler(res, { msg: 'Request sent successfully' });
+        successResponseHandler(res, FRIEND_REQUEST_SENT_SUCCESS, '');
     } catch(error) {
         console.log(error.message);
         return errorResponseHandler(res, error.message);
@@ -31,17 +51,17 @@ export const deleteFriendRequest = async(req: Request, res: Response) => {
         const { id } = res.locals;
         const existingFriendRequest = await FriendRequest.findById(req.body.id);
         if(!existingFriendRequest) {
-            return errorResponseHandler(res, 'INVALID ID');
+            return errorResponseHandler(res, INVALID_ID);
         }
 
         const requestFrom = existingFriendRequest.from.toString();
         const requestTo = existingFriendRequest.to.toString();
         if(requestFrom !== id && requestTo !== id) {
-            return errorResponseHandler(res, 'You are authorized to perform this action');
+            return errorResponseHandler(res, UNAUTHORIZED_ERROR);
         }
 
         await existingFriendRequest.delete();
-        successResponseHandler(res, 'Request Deleted Successfully');        
+        successResponseHandler(res, FRIEND_REQUEST_DELETE_SUCCESS, '');        
     } catch(error) {
         console.log(error);
         return errorResponseHandler(res, error.message);
@@ -54,7 +74,7 @@ export const getRecievedFriendRequest = async(req: Request, res: Response) => {
 
     try {
         const friendRequests = await FriendRequest.find({ to: id }).populate('from');
-        successResponseHandler(res, friendRequests);
+        successResponseHandler(res, FRIEND_REQUEST_RECEIVED_LIST ,friendRequests);
     }catch(error) {
         console.log(error);
         return errorResponseHandler(res, error.message);
@@ -67,7 +87,7 @@ export const getSentFriendRequest = async(req: Request, res: Response) => {
 
     try {
         const friendRequests = await FriendRequest.find({ from: id }).populate('to');
-        successResponseHandler(res, friendRequests);
+        return successResponseHandler(res, FRIEND_REQUEST_SENT_LIST, friendRequests);
     }catch(error) {
         console.log(error);
         return errorResponseHandler(res, error.message);
@@ -111,7 +131,7 @@ export const acceptFriendRequest = async(req: Request, res: Response) => {
         createNotification(req, { to: user_id, from: friend_id, type: FRIEND_REQUEST_ACCEPT_SUCCESS_RECEIVER }, res);
         createNotification(req, { to: friend_id, from: user_id, type: FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER}, res);
 
-        return successResponseHandler(res, 'User accepted the friend Request');
+        return successResponseHandler(res, FRIEND_REQUEST_ACCEPT_SUCCESS, '');
 
     } catch(error) {
         console.log('======>', error);

@@ -6,15 +6,14 @@ import { jwtConfig } from '../../config';
 import { IUser } from '../../types'
 import { decodeJWT, extractJWT, signToken } from '../../helpers';
 import { successResponseHandler, errorResponseHandler, catchAsyncController } from '../../utils';
-import { authControllerError } from '../../response/errors';
-import { authControllerSuccess } from '../../response/success';
+import { authError, authSuccess } from '../../response'
 
-const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED } = authControllerError;
-const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authControllerSuccess;
+const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED } = authError;
+const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authSuccess;
 const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
 
 // Create and Send Token
-const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: number, req: Request, res: Response) => {
+const createSendToken = (user: Pick<IUser, 'id' | 'password'>, status: string, req: Request, res: Response) => {
     const { id } = user;
     const token = signToken(id);
 
@@ -24,8 +23,8 @@ const createSendToken = (user: Pick<IUser, 'id' | 'password'>, statusCode: numbe
         secure: req.secure,
     });
 
-    const responseObj = { token, id, LOGIN_SUCESS }
-    successResponseHandler(res, responseObj);
+    const responseObj = { token, id }
+    return successResponseHandler(res, status, responseObj);
 }
 
 // Signup
@@ -37,7 +36,7 @@ export const signUp = catchAsyncController(async (req: Request, res: Response) =
     }
     try {
         await User.create(body);
-        return successResponseHandler(res, REGISTRATION_SUCCESSFUL);
+        return successResponseHandler(res, REGISTRATION_SUCCESSFUL, '');
     } catch (error) {
         console.log(error.message);
         return errorResponseHandler(res, error.message);
@@ -57,7 +56,7 @@ export const login = async (req: Request, res: Response) => {
         id: existingUser._id,
         password: existingUser.password
     }
-    createSendToken(userObj, 200, req, res);
+    createSendToken(userObj, LOGIN_SUCESS, req, res);
 }
 
 // Logout
@@ -73,7 +72,7 @@ export const logout = async (req: Request, res: Response) => {
     });
 
     const responseObj = { token: null, msg: LOGOUT_SUCCESS};
-    return successResponseHandler(res, responseObj);
+    return successResponseHandler(res, LOGOUT_SUCCESS, responseObj);
 }
 
 // Forgot Password
@@ -88,7 +87,7 @@ export const fogotPassword = async (req: Request, res: Response) => {
     const resetToken = user?.createPasswordResetToken();
     await user?.save({ validateBeforeSave: false });
 
-    return successResponseHandler(res, resetToken)
+    return successResponseHandler(res, resetToken, '')
 }
 
 // Reset Password
@@ -107,7 +106,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.passwordResetToken = '';
     user.passwordResetExpires = -999999999999999;
     await user.save();
-    return  successResponseHandler(res, PASSWORD_CHANGED_SUCCESS);
+    return  successResponseHandler(res, PASSWORD_CHANGED_SUCCESS, '');
 }
 
 // Update Password
@@ -115,19 +114,24 @@ export const updatePassword = async (req: Request, res: Response) => {
     const { body: { currentPassword, password } } = req;
 
     const { id } = decodeJWT(extractJWT(req));     
-    const user = await User?.findById(id).select('+password');
+    const existingUser = await User?.findById(id).select('+password');
     
-    if(!await user?.comparePassword(currentPassword)) {
+    if(!await existingUser?.comparePassword(currentPassword)) {
         return errorResponseHandler(res, INCORRECT_PASSWORD);
     }
 
-    if(!user) {
+    if(!existingUser) {
         return errorResponseHandler(res, INVALID_USER);
     }
 
-    user.password = password;
-    user.passwordChangedAt = new Date(Date.now());
-    await user?.save();
+    existingUser.password = password;
+    existingUser.passwordChangedAt = new Date();
+    await existingUser?.save();
 
-    return successResponseHandler(res, PASSWORD_UPDATE_SUCCESS);
+    const userObj = {
+        id: existingUser._id,
+        password: existingUser.password,
+    }
+
+    createSendToken(userObj, PASSWORD_UPDATE_SUCCESS, req, res);
 }

@@ -4,6 +4,12 @@ import mongoose from 'mongoose';
 import { User, Post } from '../../models';
 import { decodeJWT, extractJWT } from '../../helpers';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
+import { userSuccess } from '../../response';
+
+const { 
+    USER_LIST_SUCCESS,
+    USER_PROFILE_FEEDS_SUCCESS
+} = userSuccess;
 
 export const feedsController = async(req:Request, res:Response) => {
     try {
@@ -47,7 +53,7 @@ export const feedsController = async(req:Request, res:Response) => {
             }
         ])
 
-        successResponseHandler(res, userPost);
+        return successResponseHandler(res, USER_LIST_SUCCESS, userPost, 200);
     }catch(error) {
         console.log(error.message);
         return errorResponseHandler(res, error.message);
@@ -73,7 +79,7 @@ export const profileViewController = async(req:Request, res:Response) => {
             { $sort: { 'createdAt': -1 } }
         ])
 
-        successResponseHandler(res, visitingUserProfile);
+        return successResponseHandler(res, USER_PROFILE_FEEDS_SUCCESS, visitingUserProfile, 200);
     }catch(error) {
         console.log(error.message);
         return errorResponseHandler(res, error.message);

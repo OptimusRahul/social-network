@@ -3,7 +3,10 @@ import { Request, Response } from 'express';
 import { Post, Reaction } from '../../models';
 import { createNotification } from '../';
 import { successResponseHandler, errorResponseHandler } from '../../utils';
+import { reactionSuccess } from '../../response';
 import { decodeJWT, extractJWT } from '../../helpers';
+
+const { REACTION_CREATED, REACTION_UPDATED, REACTION_DELETED } = reactionSuccess;
 
 export const reactionController = async(req:Request, res:Response) => {
     try {
@@ -29,22 +32,22 @@ export const reactionController = async(req:Request, res:Response) => {
             exisitingPost?.reactions.push({ reactionId: newReaction._id })
             await exisitingPost?.save();
             
-            return successResponseHandler(res, `You ${type} the post`);
+            return successResponseHandler(res, REACTION_CREATED ,`You ${type} the post`);
         }
 
         if(existingReaction.type !== type) {
             existingReaction.type = type;
             await existingReaction.save();
-            return successResponseHandler(res, `You ${type} the post`);
+            return successResponseHandler(res, REACTION_UPDATED, `You ${type} the post`);
         }
 
         const index: any = exisitingPost?.reactions.findIndex((obj:any) => obj.reactionId === existingReaction._id)
         exisitingPost?.reactions.splice(index, 1);
         await exisitingPost?.save();
         await existingReaction.delete();
-        return successResponseHandler(res, 'Reaction deleted');
+        return successResponseHandler(res, REACTION_DELETED, '');
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, error.message, 304);
     }
 }

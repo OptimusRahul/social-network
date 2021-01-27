@@ -21,7 +21,7 @@ postRouter.patch('/update/:id', paramsValidation(id), validationMiddleware(updat
 postRouter.delete('/delete/:id', paramsValidation(id), postVerfification, deletePost);
 
 // Reaction Routes
-postRouter.post('/reaction', validationMiddleware(reactionSchema), postVerfification, reactionMiddleware, reactionController);
+postRouter.post('/reaction', validationMiddleware(reactionSchema), postVerfification, reactionController);
 
 // Comments Routes
 postRouter.post('/comments/create', validationMiddleware(createCommentSchema), postVerfification, createComment);

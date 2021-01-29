@@ -4,12 +4,19 @@ import mongoose from 'mongoose';
 import { User, Post } from '../../models';
 import { decodeJWT, extractJWT } from '../../helpers';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
-import { userSuccess } from '../../response';
+import { userSuccess, userError } from '../../response';
 
 const { 
     USER_LIST_SUCCESS,
     USER_PROFILE_FEEDS_SUCCESS
 } = userSuccess;
+
+const { 
+    USER_LIST_FAILURE,
+    USER_PROFILE_FEEDS_FAILURE,
+    INVALID_PAGE,
+    INVALID_USER
+} = userError;
 
 export const feedsController = async(req:Request, res:Response) => {
     try {
@@ -19,7 +26,7 @@ export const feedsController = async(req:Request, res:Response) => {
         console.log(page, lim, typeof page, typeof lim);
 
         if(!lim || !page || isNaN(page) || isNaN(lim)) {
-            return errorResponseHandler(res, 'Invalid page or limit')
+            return errorResponseHandler(res, INVALID_PAGE, '')
         }
 
         const pageNumber: number = Number(req.query.page) ?? 1;
@@ -28,7 +35,7 @@ export const feedsController = async(req:Request, res:Response) => {
         const { id } = decodeJWT(extractJWT(req));
         const user = await User.findById(id);
         if(!user) {
-            return errorResponseHandler(res, 'User does not exist');
+            return errorResponseHandler(res, INVALID_USER, '');
         }
 
         const conditions: Array<{}> = [{ from: mongoose.Types.ObjectId(id)} , { to: mongoose.Types.ObjectId(id) }];
@@ -56,7 +63,7 @@ export const feedsController = async(req:Request, res:Response) => {
         return successResponseHandler(res, USER_LIST_SUCCESS, userPost, 200);
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, USER_LIST_FAILURE, error.message);
     } 
 }
 
@@ -82,6 +89,6 @@ export const profileViewController = async(req:Request, res:Response) => {
         return successResponseHandler(res, USER_PROFILE_FEEDS_SUCCESS, visitingUserProfile, 200);
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, USER_PROFILE_FEEDS_FAILURE, error.message);
     }
 }

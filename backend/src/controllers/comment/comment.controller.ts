@@ -26,7 +26,7 @@ export const createComment = async(req:Request, res:Response) => {
         return successResponseHandler(res, COMMENT_CREATED_SUCCESS, comment);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message, 304);
+        return errorResponseHandler(res, COMMENT_CREATED_FAIL, error.message, 304);
     }
 }
 
@@ -51,7 +51,7 @@ export const updateComment = async(req:Request, res:Response) => {
         return successResponseHandler(res, COMMENT_UPDATED_SUCCESS, existingComment, 204);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message, 304);
+        return errorResponseHandler(res, COMMENT_UPDATED_FAIL, error.message, 304);
     }
 }
 
@@ -79,6 +79,6 @@ export const deleteComment = async(req:Request, res: Response) => {
         return successResponseHandler(res, COMMENT_DELETED_SUCCESS, deleteComment, 204);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message, 304);
+        return errorResponseHandler(res, COMMENT_DELETED_FAIL, error.message, 304);
     }
 }

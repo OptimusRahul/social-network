@@ -4,11 +4,15 @@ import mongoose from 'mongoose';
 import { decodeJWT, extractJWT } from '../../helpers';
 import { Notification } from '../../models';
 import { successResponseHandler, errorResponseHandler } from '../../utils';
-import { notificationSuccess } from '../../response';
+import { notificationSuccess, notificationFailure } from '../../response';
 
 const { 
     NOTIFICATION_SUCCESS 
 } = notificationSuccess;
+
+const {
+    NOTIFICATION_FAILURE
+} = notificationFailure;
 
 // Create Notification
 export const createNotification = async(req: Request, data: any, res: Response) => {
@@ -34,6 +38,6 @@ export const getNotification = async(req: Request, res: Response) => {
         return successResponseHandler(res, NOTIFICATION_SUCCESS, notification);
     } catch(error) {
         const { message } = JSON.parse(JSON.stringify(error));
-        return errorResponseHandler(res, message);
+        return errorResponseHandler(res, NOTIFICATION_FAILURE, message);
     }
 }

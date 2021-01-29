@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { FriendRequest, Notification, User } from '../../models';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
-import { friendRequestSuccess, userError, authError } from '../../response';
+import { friendRequestSuccess, userError, authError, friendRequestError } from '../../response';
 import { notification } from '../../config'
 import { createNotification } from '../';
 import { decodeJWT, extractJWT } from '../../helpers';
@@ -24,6 +24,14 @@ const {
     FRIEND_REQUEST_ACCEPT_SUCCESS 
 } = friendRequestSuccess;
 
+const {
+    FRIEND_REQUEST_SENT_FAILURE,
+    FRIEND_REQUEST_DELETE_FAILURE,
+    FRIEND_REQUEST_RECEIVED_LIST_FAILURE,
+    FRIEND_REQUEST_SENT_LIST_FAILURE,
+    FRIEND_REQUEST_ACCEPT_FAILURE
+} = friendRequestError;
+
 const { 
     FRIEND_REQUEST_RECEIVED, 
     FRIEND_REQUEST_ACCEPT_SUCCESS_SENDER, 
@@ -41,7 +49,7 @@ export const sendFriendRequest = async(req: Request, res: Response) => {
         successResponseHandler(res, FRIEND_REQUEST_SENT_SUCCESS, '');
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, FRIEND_REQUEST_SENT_FAILURE, error.message);
     }
 }
 
@@ -51,20 +59,20 @@ export const deleteFriendRequest = async(req: Request, res: Response) => {
         const { id } = res.locals;
         const existingFriendRequest = await FriendRequest.findById(req.body.id);
         if(!existingFriendRequest) {
-            return errorResponseHandler(res, INVALID_ID);
+            return errorResponseHandler(res, INVALID_ID, '');
         }
 
         const requestFrom = existingFriendRequest.from.toString();
         const requestTo = existingFriendRequest.to.toString();
         if(requestFrom !== id && requestTo !== id) {
-            return errorResponseHandler(res, UNAUTHORIZED_ERROR);
+            return errorResponseHandler(res, UNAUTHORIZED_ERROR, '');
         }
 
         await existingFriendRequest.delete();
         successResponseHandler(res, FRIEND_REQUEST_DELETE_SUCCESS, '');        
     } catch(error) {
         console.log(error);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, FRIEND_REQUEST_DELETE_FAILURE, error.message);
     }
 }
 
@@ -77,7 +85,7 @@ export const getRecievedFriendRequest = async(req: Request, res: Response) => {
         successResponseHandler(res, FRIEND_REQUEST_RECEIVED_LIST ,friendRequests);
     }catch(error) {
         console.log(error);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, FRIEND_REQUEST_RECEIVED_LIST_FAILURE, error.message);
     }
 }
 
@@ -90,7 +98,7 @@ export const getSentFriendRequest = async(req: Request, res: Response) => {
         return successResponseHandler(res, FRIEND_REQUEST_SENT_LIST, friendRequests);
     }catch(error) {
         console.log(error);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, FRIEND_REQUEST_SENT_LIST_FAILURE, error.message);
     }
 }
 
@@ -108,12 +116,12 @@ export const acceptFriendRequest = async(req: Request, res: Response) => {
 
         if(!user || !friend || !sentTo) {
             console.log('!user || !friend || !sentTo');
-            return errorResponseHandler(res, INVALID_USER);
+            return errorResponseHandler(res, INVALID_USER, '');
         }
 
         if(user.id === friend.id) {
             console.log('user.id === friend.id');
-            return errorResponseHandler(res, `Relax ${sentTo.fullName} will accept your request soon`);
+            return errorResponseHandler(res, `Relax ${sentTo.fullName} will accept your request soon`, '');
         }
 
         const user_id: any = user._id;
@@ -136,6 +144,6 @@ export const acceptFriendRequest = async(req: Request, res: Response) => {
     } catch(error) {
         console.log('======>', error);
         const { message } = JSON.parse(JSON.stringify(error));
-        return errorResponseHandler(res, message);
+        return errorResponseHandler(res, FRIEND_REQUEST_ACCEPT_FAILURE, message);
     }
 }

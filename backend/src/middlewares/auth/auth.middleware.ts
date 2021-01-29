@@ -3,11 +3,15 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../../models';
 import { decodeJWT, extractJWT } from '../../helpers'
 import { errorResponseHandler } from '../../utils';
-import { authMiddleWareError, authControllerError } from '../../response/errors';
+import { authError } from '../../response';
 
-const { UNAUTHORIZED_USER, UNAUTHORIZED_TOKEN,PASSWORD_CHANGED_LOGIN_AGAIN } = authMiddleWareError;
-    
-const { INVALID_USER } = authControllerError;
+const { 
+    UNAUTHORIZED_USER, 
+    UNAUTHORIZED_TOKEN, 
+    PASSWORD_CHANGED_LOGIN_AGAIN, 
+    INVALID_USER,
+
+} = authError;
 
 const verifyUserState = async(decoded: any, error: string, res: Response, next: NextFunction) => {
     const { id, iat } = decoded;
@@ -16,15 +20,15 @@ const verifyUserState = async(decoded: any, error: string, res: Response, next: 
         currentUser = await User.findById(id);
         
         if(!currentUser) {
-            return errorResponseHandler(res, error);
+            return errorResponseHandler(res, INVALID_USER, error);
         }
 
         if(currentUser?.changedPasswordAfter(iat)) {
-            return errorResponseHandler(res, PASSWORD_CHANGED_LOGIN_AGAIN);
+            return errorResponseHandler(res, PASSWORD_CHANGED_LOGIN_AGAIN, '');
         }        
     } catch(error) {
         const { message } = JSON.parse(JSON.stringify(error));
-        return errorResponseHandler(res, message);
+        return errorResponseHandler(res, INVALID_USER, message);
     }
 
     res.locals.user = currentUser;
@@ -56,6 +60,6 @@ export const isLoggedIn = async(req: Request, res: Response, next: NextFunction)
         const decoded = decodeJWT(jwt);
         checkUserAuthentication('', decoded, res, next);
     } else {
-        return errorResponseHandler(res, UNAUTHORIZED_USER);
+        return errorResponseHandler(res, UNAUTHORIZED_USER, '');
     }
 }

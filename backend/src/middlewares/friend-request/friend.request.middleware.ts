@@ -1,13 +1,20 @@
 import { NextFunction, request, Request, Response } from 'express';
 
 import { User, FriendRequest } from '../../models';
-import { authControllerError, friendRequestControllerError, friendRequestMiddlewareError } from '../../response/errors';
+import { authError, friendRequestError } from '../../response';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
 import { decodeJWT, extractJWT } from '../../helpers';
 
-const  { INVALID_USER } = authControllerError;
-const { INVALID_FRIEND_REQUEST, FRIEND_REQUEST_NOT_FOUND } = friendRequestControllerError;
-const { EXISTING_REQUEST, ALREADY_FRIENDS } = friendRequestMiddlewareError;
+const { 
+    INVALID_USER,
+} = authError;
+
+const { 
+    INVALID_FRIEND_REQUEST, 
+    FRIEND_REQUEST_NOT_FOUND,
+    EXISTING_REQUEST,
+    ALREADY_FRIENDS,
+} = friendRequestError;
 
 export const verifyRequest = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,13 +22,13 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
         const { id } =  decodeJWT(extractJWT(req));
 
         if(id === to) {
-            return errorResponseHandler(res, INVALID_FRIEND_REQUEST);
+            return errorResponseHandler(res, INVALID_FRIEND_REQUEST, '');
         }        
 
         const existingUser = await User.findById(to).populate('friends');
-        // return res.send(user);
+
         if(!existingUser) {
-            return errorResponseHandler(res, INVALID_USER)
+            return errorResponseHandler(res, INVALID_USER, '')
         }
 
         const user = await User.findById(id);
@@ -33,15 +40,13 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
                 console.log(index);
             }
             return index;
-        })
-
-        console.log('====>', i);
+        });
 
         const index = user?.friends.findIndex((friend:any) => friend.friendId.toString() === to)
 
 
         if(index !== -1) {
-            return errorResponseHandler(res, ALREADY_FRIENDS);
+            return errorResponseHandler(res, ALREADY_FRIENDS, '');
         }
 
         const existingRequest = await FriendRequest.findOne({ $or: [
@@ -58,6 +63,7 @@ export const verifyRequest = async (req: Request, res: Response, next: NextFunct
 
     } catch(error) {
         console.log(error);
+        return errorResponseHandler(res, error.message, '');
     }
 
     next();
@@ -73,7 +79,7 @@ export const verifyAcceptFriendRequest = async (req: Request, res: Response, nex
         res.locals.friendRequest = friendRequest;
     }catch(error) {
         const { message } = JSON.parse(JSON.stringify(error));
-        return errorResponseHandler(res, message);
+        return errorResponseHandler(res, message, '');
     }
 
     next();

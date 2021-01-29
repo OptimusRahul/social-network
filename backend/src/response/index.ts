@@ -16,3 +16,5 @@ export { reactionFail, reactionSuccess } from './reaction';
 export { notificationFailure, notificationSuccess } from './notification';
 
 export { postFailure, postSuccess } from './post';
+
+export { appRouter } from './routes/app.router';

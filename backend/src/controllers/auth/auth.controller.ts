@@ -8,7 +8,7 @@ import { decodeJWT, extractJWT, signToken } from '../../helpers';
 import { successResponseHandler, errorResponseHandler, catchAsyncController } from '../../utils';
 import { authError, authSuccess } from '../../response'
 
-const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED } = authError;
+const { INCORRECT_PASSWORD, DUPLICATE_EMAIL, INVALID_USER, TOKEN_EXPIRED, REGISTRATION_FAILURE, NO_LOGGED_IN_USER } = authError;
 const { REGISTRATION_SUCCESSFUL, LOGIN_SUCESS, LOGOUT_SUCCESS, PASSWORD_CHANGED_SUCCESS, PASSWORD_UPDATE_SUCCESS } = authSuccess;
 const { JWT_COOKIE_EXPIRES_IN } = jwtConfig;
 
@@ -32,14 +32,14 @@ export const signUp = catchAsyncController(async (req: Request, res: Response) =
     const { body, body: { email } } = req;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-        return errorResponseHandler(res, DUPLICATE_EMAIL);
+        return errorResponseHandler(res, DUPLICATE_EMAIL, '');
     }
     try {
         await User.create(body);
         return successResponseHandler(res, REGISTRATION_SUCCESSFUL, '');
     } catch (error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, REGISTRATION_FAILURE, error.message);
     }
 });
 
@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
 
     if(!req.cookies.jwt) {
-        return errorResponseHandler(res, 'No user logged In');
+        return errorResponseHandler(res, NO_LOGGED_IN_USER, '');
     }
 
     res.cookie('jwt', '', {
@@ -81,7 +81,7 @@ export const fogotPassword = async (req: Request, res: Response) => {
     
     const user = await User.findOne({ email });
     if (!user) {
-        return errorResponseHandler(res, INVALID_USER)
+        return errorResponseHandler(res, INVALID_USER, '', 204)
     }
 
     const resetToken = user?.createPasswordResetToken();
@@ -99,7 +99,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } })
 
     if (!user) {
-        return errorResponseHandler(res, TOKEN_EXPIRED)
+        return errorResponseHandler(res, TOKEN_EXPIRED, '')
     }
 
     user.password = password;
@@ -117,11 +117,11 @@ export const updatePassword = async (req: Request, res: Response) => {
     const existingUser = await User?.findById(id).select('+password');
     
     if(!await existingUser?.comparePassword(currentPassword)) {
-        return errorResponseHandler(res, INCORRECT_PASSWORD);
+        return errorResponseHandler(res, INCORRECT_PASSWORD, '');
     }
 
     if(!existingUser) {
-        return errorResponseHandler(res, INVALID_USER);
+        return errorResponseHandler(res, INVALID_USER, '');
     }
 
     existingUser.password = password;

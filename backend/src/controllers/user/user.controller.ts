@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { User } from '../../models';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
-import { userSuccess, authError } from '../../response';
+import { userSuccess, authError, userError } from '../../response';
 
 const { 
     USER_LIST_SUCCESS, 
@@ -11,6 +11,14 @@ const {
     FRIEND_DELETE_SUCCESS,
     USER_DELETED_SUCCESS
 } = userSuccess;
+
+const {
+    USER_LIST_FAILURE,
+    LOGGED_IN_DETAILS_FAILURE,
+    UPDATE_USER_FAILURE,
+    FRIEND_DELETE_FAILURE,
+    USER_DELETED_FAILURE
+} = userError;
 
 const {
     UNAUTHORIZED_USER
@@ -43,7 +51,7 @@ export const getAllUsers = async(req: Request, res: Response) => {
         return successResponseHandler(res, USER_LIST_SUCCESS, usersList);
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, USER_LIST_FAILURE, error.message);
     }
 }
 
@@ -54,7 +62,7 @@ export const getUser = async(req: Request, res: Response) => {
         return successResponseHandler(res, LOGGED_IN_DETAILS, user);
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, LOGGED_IN_DETAILS_FAILURE, error.message);
     }
 }
 
@@ -65,7 +73,7 @@ export const updateUser = async(req: Request, res: Response) => {
         return successResponseHandler(res, UPDATE_USER_SUCCESS, data);
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, UPDATE_USER_FAILURE, error.message);
     }
 }
 
@@ -77,7 +85,7 @@ export const deleteFriend = async(req:Request, res:Response) => {
         const loggedInUser = await User.findById(id);
 
         if(!loggedInUser) {
-            return errorResponseHandler(res, UNAUTHORIZED_USER);
+            return errorResponseHandler(res, UNAUTHORIZED_USER, '');
         }
 
         const index = loggedInUser.friends.findIndex((friend: any) => friend.friendId === fid);
@@ -88,7 +96,7 @@ export const deleteFriend = async(req:Request, res:Response) => {
 
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, FRIEND_DELETE_FAILURE, error.message);
     }
 }
 
@@ -99,6 +107,6 @@ export const deleteUser = async(req: Request, res: Response) => {
         return successResponseHandler(res, USER_DELETED_SUCCESS, '');
     }catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message);
+        return errorResponseHandler(res, USER_DELETED_FAILURE, error.message);
     }
 }   

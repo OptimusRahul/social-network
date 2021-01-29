@@ -2,7 +2,6 @@ import { Router } from 'express';
 
 import { isLoggedIn, verifyRequest, verifyAcceptFriendRequest, validationMiddleware } from '../../middlewares';
 import { getRecievedFriendRequest, getSentFriendRequest, sendFriendRequest, deleteFriendRequest, acceptFriendRequest } from '../../controllers';
-
 import { friendRequestSchema } from '../../helpers';
 
 const { sendfriendRequestSchema, acceptFriendRequestSchema, deleteFriendRequestSchema } = friendRequestSchema;

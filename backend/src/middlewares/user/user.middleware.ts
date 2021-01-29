@@ -2,20 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import { decodeJWT, extractJWT } from '../../helpers';
 
 import { User } from '../../models';
-import { authControllerError } from '../../response/errors';
+import { authError, userError } from '../../response';
 import { errorResponseHandler } from '../../utils';
 
-const { INVALID_USER } = authControllerError;
+const { INVALID_USER } = authError;
+const { BOTH_ARE_NOT_FRIENDS } = userError;
 
 export const verifyExisitngFriends = async(req:Request, res:Response, next:NextFunction) => {
     const { id } = decodeJWT(extractJWT(req));
-    const { locals: { data: { to } } } = res;
     try {
         if(req.body.to) {
-            console.log('test', req.body.to);
             const existingUser = await User.findById(req.body.to);
             if(!existingUser) {
-                return errorResponseHandler(res, INVALID_USER);
+                return errorResponseHandler(res, INVALID_USER, '');
             }
             let alreadyFriends = false;
             console.log(existingUser.friends);
@@ -28,7 +27,7 @@ export const verifyExisitngFriends = async(req:Request, res:Response, next:NextF
             })
             console.log(alreadyFriends);
             if(!alreadyFriends) {
-                return errorResponseHandler(res, 'You both are not friends');
+                return errorResponseHandler(res, BOTH_ARE_NOT_FRIENDS, '');
             }
         }
     } catch(error) {

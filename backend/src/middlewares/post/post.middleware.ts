@@ -14,7 +14,7 @@ export const postVerfification = async(req: Request, res: Response, next: NextFu
         const existingPost = await Post.findById(post_id);
         
         if(!existingPost){
-            return errorResponseHandler(res, 'Post does not exist!!')
+            return errorResponseHandler(res, 'Post does not exist!!', '')
         }
 
         res.locals.post = existingPost;
@@ -30,7 +30,7 @@ export const reactionVerification = async(req: Request, res: Response, next: Nex
     try {
         const existingReaction = await Post.findById(post_id).find({ reactions: { $in: user_id } })
         if(existingReaction.length <= 0){
-            return errorResponseHandler(res, "You haven't reacted the post");
+            return errorResponseHandler(res, "You haven't reacted the post", '');
         }
     } catch(error) {
         console.log(error);

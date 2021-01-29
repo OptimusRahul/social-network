@@ -10,7 +10,7 @@ const { DATABASE, DATABASE_PASSWORD } = dbConfig;
 const db_uri = DATABASE.replace('<PASSWORD>', DATABASE_PASSWORD);
 
 // Mongoose Setup
-mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise;  
 
 // Mongoose Connection
 mongoose.connect(db_uri, {
@@ -23,7 +23,8 @@ mongoose.connect(db_uri, {
     console.log('Connection error');
 })
 
-const port = process.env.port || 5000;
+const port = process.env.PORT || 5000;
+
 
 app.listen(port, () => {
     console.log(`App is listening on ${port}`);

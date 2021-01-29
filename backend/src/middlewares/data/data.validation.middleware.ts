@@ -9,7 +9,7 @@ export const validationMiddleware = (schema: Schema) => {
         const result = schema.validate(body);
         const { error, value } = result;
         if(error) {
-            return errorResponseHandler(res, error?.details[0].message, 422);
+            return errorResponseHandler(res, error?.details[0].message, '', 422);
         } else {
             res.locals.data = value;
             next();
@@ -24,7 +24,7 @@ export const paramsValidation = (schema: Schema) => {
         const { error, value } = result;
 
         if(error) {
-            return errorResponseHandler(res, error?.details[0].message, 422);
+            return errorResponseHandler(res, error?.details[0].message, '', 422);
         }
 
         // if(!mongoose.Types.ObjectId.isValid(id)) {

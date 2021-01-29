@@ -5,14 +5,14 @@ import bcrypt from 'bcryptjs';
 import { randomBytes, createHash  } from 'crypto';
 
 import { IUser } from '../../types'
-import { user } from '../../response/errors/index';
+import { userModel } from '../../response';
 
 const { 
     FIRST_NAME_WARNING,
     EMAIL_WARNING,
     PASSWORD_WARNING,
     GENDER_WARNING
-} = user;
+} = userModel;
 
 const userSchema: Schema<IUser> = new Schema({
     email: {

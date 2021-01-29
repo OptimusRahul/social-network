@@ -3,18 +3,16 @@ import { Request, Response } from 'express';
 import { Post, Reaction } from '../../models';
 import { createNotification } from '../';
 import { successResponseHandler, errorResponseHandler } from '../../utils';
-import { reactionSuccess } from '../../response';
+import { reactionSuccess, reactionFail } from '../../response';
 import { decodeJWT, extractJWT } from '../../helpers';
 
 const { REACTION_CREATED, REACTION_UPDATED, REACTION_DELETED } = reactionSuccess;
+const { REACTION_OPERATION_FAIL } = reactionFail;
 
 export const reactionController = async(req:Request, res:Response) => {
     try {
         const { post_id, type } = req.body;
-        // const existingReaction = await Posts.findById(post_id).find({ reactions: { $in: user_id } })
-        // if(existingReaction.length <= 0){
-        //     return errorResponseHandler(res, "You haven't reacted the post");
-        // }
+
         let from = req.body.from;
 
         if(!from) {
@@ -48,6 +46,6 @@ export const reactionController = async(req:Request, res:Response) => {
         return successResponseHandler(res, REACTION_DELETED, '');
     } catch(error) {
         console.log(error.message);
-        return errorResponseHandler(res, error.message, 304);
+        return errorResponseHandler(res, REACTION_OPERATION_FAIL, error.message, 304);
     }
 }

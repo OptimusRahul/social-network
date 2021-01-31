@@ -1,5 +1,8 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import cors from 'cors';
+import mongoSanitize from 'express-mongo-sanitize';
 
 import { userRouter, friendRequestRouter, notificationRouter, postRouter, feedRouter } from './routes';
 import { errorResponseHandler } from './utils/index';
@@ -8,6 +11,12 @@ import { appRouter } from './response'
 const { INVALID_ROUTE } = appRouter;
 
 const app = express();
+
+app.use(cors());
+
+app.use(helmet());
+
+app.use(mongoSanitize());
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));

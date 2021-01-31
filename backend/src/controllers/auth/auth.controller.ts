@@ -52,6 +52,10 @@ export const login = async (req: Request, res: Response) => {
     if (!existingUser || !(await existingUser.comparePassword(password))) {
         return errorResponseHandler(res, INCORRECT_PASSWORD, 401);
     }
+
+    existingUser.active = true;
+    await existingUser.save();
+
     const userObj = {
         id: existingUser._id,
         password: existingUser.password
@@ -65,6 +69,10 @@ export const logout = async (req: Request, res: Response) => {
     if(!req.cookies.jwt) {
         return errorResponseHandler(res, NO_LOGGED_IN_USER, '');
     }
+
+    const { id } = decodeJWT(extractJWT(req));
+
+    await User.findByIdAndUpdate(id, { active: false });
 
     res.cookie('jwt', '', {
         expires: new Date(Date.now() + 10 * 1000),

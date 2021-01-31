@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 
 import { Post, Reaction } from '../../models';
 import { createNotification } from '../';
+import { notification } from '../../config'
 import { successResponseHandler, errorResponseHandler } from '../../utils';
 import { reactionSuccess, reactionFail } from '../../response';
 import { decodeJWT, extractJWT } from '../../helpers';
 
+const { REACTION_NOTIFICATION } = notification;
 const { REACTION_CREATED, REACTION_UPDATED, REACTION_DELETED } = reactionSuccess;
 const { REACTION_OPERATION_FAIL } = reactionFail;
 
@@ -29,7 +31,7 @@ export const reactionController = async(req:Request, res:Response) => {
             
             exisitingPost?.reactions.push({ reactionId: newReaction._id })
             await exisitingPost?.save();
-            
+
             return successResponseHandler(res, REACTION_CREATED ,`You ${type} the post`);
         }
 

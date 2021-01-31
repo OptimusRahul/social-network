@@ -21,4 +21,5 @@ export interface IUser {
     passwordChangedAt: Date
     passwordResetToken: string
     passwordResetExpires: number
+    active: Boolean
 }

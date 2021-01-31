@@ -5,6 +5,7 @@ config();
 const { env: { DATABASE, DATABASE_PASSWORD } } = process;
 
 if(!DATABASE || !DATABASE_PASSWORD) {
+    console.log(DATABASE, DATABASE_PASSWORD);
     process.exit(1);
 }
 

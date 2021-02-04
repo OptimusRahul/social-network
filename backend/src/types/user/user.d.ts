@@ -1,9 +1,11 @@
+import { Document } from "mongoose";
+
 enum Gender {
     Male = 0,
     Female = 1
 }
 
-export interface IUser {
+export interface IUser extends Document {
     id: string
     email: string
     password: string
@@ -14,12 +16,11 @@ export interface IUser {
         gender: Gender
         DOB: Date
         location: Object
-
     }
     friends: any
     createdAt: Date
     passwordChangedAt: Date
     passwordResetToken: string
     passwordResetExpires: number
-    active: Boolean
+    active: boolean
 }

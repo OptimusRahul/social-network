@@ -7,11 +7,6 @@ import { IPost } from '../../types'
 const { PUBLIC_POST, PRIVATE_POST } = post;
 const { LIKE, LOVE, SAD, HAPPY, ANGRY } = reaction;
 
-//  Me -> Wall -> from : id, post, createdAt, scope
-//  Me -> friend -> Wall -> from: id, to: user_id, post, createdAt, scope ||
-//                          from : user_id, to: id, post, createdAt, scope
-
-
 const postSchema: Schema<IPost> = new Schema({
     from: {
         type: ObjectID,

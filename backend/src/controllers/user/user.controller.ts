@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { User } from '../../models';
 import { errorResponseHandler, successResponseHandler } from '../../utils';
 import { userSuccess, authError, userError } from '../../response';
+import { IUser } from '../../types';
 
 const { 
     USER_LIST_SUCCESS, 
@@ -29,7 +30,7 @@ export const getAllUsers = async(req: Request, res: Response) => {
         const { locals: { id } } = res;
         const users = await User.find( { _id: { $ne: id } } ).populate('friends');
         
-        const usersList = users.map(user => {
+        const usersList = users.map((user: any) => {
             const { _id, email, personalDetails: { firstName, lastName, photo, DOB, location }, friends, createdAt, fullName, getGender } = user;
             return {
                 _id,

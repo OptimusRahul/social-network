@@ -82,7 +82,7 @@ const userSchema: Schema<IUser> = new Schema({
 
 });
 
-interface IUserBaseDocument extends Omit<IUser, 'id'>, Document {
+export interface IUserBaseDocument extends IUser {
     fullName: string;
     getGender: string;
     comparePassword(this: IUserBaseDocument, newPassword: string): Promise<boolean>,
